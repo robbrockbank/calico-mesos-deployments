@@ -1,68 +1,11 @@
-# Mesos Cluster and Master Preparation
+# Mesos Cluster Preparation: etcd & zookeeper
+This guide will launch etcd and zookeeper as docker containers bound to their host's networking namespace. While most Mesos deployments will run these services on specific, dedicated machines chosen to maximize availability, we suggest following this guide on whichever machine is running your Mesos Master process, for simplicity.
 
-Follow this tutorial to ensure your Mesos Master host and cluster setup are compatible with a Mesos + Calico Deployment.
+## Prerequisites: Docker
+Docker must be installed on this hostyou will need Docker installed on every Master and Agent in your cluster.
+[Follow Docker's Centos installation guide](https://docs.docker.com/engine/installation/centos/) for information on how to get Docker installed.
 
-## Configure your firewall
-You will either need to configure the firewalls on each node in your cluster 
-(recommended) to allow access to the cluster services or disable it completely. 
-Included in this section is configuration examples for `firewalld` on your Master node.  If you use 
-a different firewall, check your documentation for how to open the listed ports.
-
-Master node(s) require
-
-| Service Name | Port/protocol     |
-|--------------|-------------------|
-| mesos-master | 5050/tcp          |
-
-Example `firewalld` config
-
-```
-sudo firewall-cmd --zone=public --add-port=5050/tcp --permanent
-sudo systemctl restart firewalld
-```
-
-# Install ZooKeeper and etcd
-> Note: Most Mesos deployments will run these services on specific, dedicated 
-> machines chosen to maximize availability. These commands can be run on any 
-> Centos machine, but for the purposes of this demo, we will run through them on 
-> our Master to quickly and easily set up a cluster.
-
-If you would like to quickly bring up a Mesos cluster, you can install 
-Zookeeper and Etcd directly onto the master using Docker containers.
-
-## 1. Install Docker
-
-We install Docker to easily deploy ZooKeeper and etcd as containers.
-
-Run the following commands to install Docker:
-
-```
-sudo yum -y install docker docker-selinux
-sudo systemctl enable docker.service
-sudo systemctl start docker.service
-```
-### Verify Docker installation
-
-```
-sudo docker run hello-world
-```
-
-### Add user to Docker Group (Optional)
-You may also want to create a `docker` group and add your local user to the group.  This means you can drop the `sudo` in the `docker ...` commands that follow.
-
-```
-sudo groupadd docker
-sudo usermod -aG docker `whoami`
-sudo systemctl restart docker.service
-```
-
-Then log out (`exit`) and log back in to pick up your new group association.  Verify your user has access to Docker without sudo
-
-```
-docker ps
-```
-
-## 2. Launch ZooKeeper
+## 1. Launch ZooKeeper
 Mesos uses ZooKeeper to elect and keep track of the leading master in the cluster.
 
 ```
@@ -83,7 +26,7 @@ Example `firewalld` config
 sudo firewall-cmd --zone=public --add-port=2181/tcp --permanent
 sudo systemctl restart firewalld
 ```
-## 3. Launch etcd
+## 2. Launch etcd
 Calico uses etcd as its data store and communication mechanism among Calico components.
 
 etcd needs your fully qualified domain name to start correctly.
@@ -116,8 +59,5 @@ Example `firewalld` config
 sudo firewall-cmd --zone=public --add-port=4001/tcp --permanent
 sudo systemctl restart firewalld
 ```
-
-# Next Steps 
-With your Master configured, you're ready to [Install Calico](README.md#2-install-mesos-slave-netmodules-and-calico).
 
 [![Analytics](https://ga-beacon.appspot.com/UA-52125893-3/calico-containers/docs/mesos/MesosClusterPreparation.md?pixel)](https://github.com/igrigorik/ga-beacon)

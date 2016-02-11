@@ -4,12 +4,14 @@ The following information includes application json and information on launching
 ## Test Cluster Health
 Before you start launching tasks with Marathon, we suggest running the Calico-Mesos Test Framework. This Framework will register with mesos directly and launch ping and sleep tasks across your mesos cluster, verifiying netgroup enforcement and network connectivity between tasks.
 
-To launch the framework, run the following docker command:
+To launch the framework, run the following docker command from any host that can communicate with your master (we recommend simply running it directly on the master itself):
 ```
 docker run calico/calico-mesos-framework <master-ip>:5050
 ```
-> NOTE: Some tests require multiple hosts to ensure cross-host communication, and may fail unless you are running 2+ agents.
+- Some tests require multiple hosts to ensure cross-host communication, and may fail unless you are running 2+ agents.
+- Additionally, if running your cluster in the public cloud, cross-host tests will fail unless you [Enable IP over IP](https://github.com/projectcalico/calico-containers/blob/master/docs/FAQ.md#can-i-run-calico-in-a-public-cloud-environment)
 
+Be sure to contact us on [Slack][calico-slack] if your tests are still not passing!
 
 ## Launching Tasks with Marathon
 Calico is compatible with all frameworks which use the new NetworkInfo protobuf when launching tasks. Marathon has introduced limited support for this in v0.14.0. 
@@ -54,6 +56,6 @@ Send the `app.json` to marathon to launch it:
 ```
 curl -X PUT -H "Content-Type: application/json" http://localhost:8080/v2/groups/calico-apps  -d @app.json
 ```
-
+[calico-slack]: https://calicousers-slackin.herokuapp.com/
 [marathon-ip-per-task-doc]: https://github.com/mesosphere/marathon/blob/v0.14.0/docs/docs/ip-per-task.md
 [![Analytics](https://ga-beacon.appspot.com/UA-52125893-3/calico-containers/docs/mesos/README.md?pixel)](https://github.com/igrigorik/ga-beacon)

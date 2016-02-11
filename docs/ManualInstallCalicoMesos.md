@@ -18,6 +18,10 @@ Then attempt to ping that name from other hosts.
 
 It is also important that Calico and Mesos have the same view of the (non-fully-qualified) hostname.  Ensure that the value returned by `hostname` is unique for each host in your cluster.
 
+### Docker
+Since this is a dockerized deployment, you will need Docker installed on every Master and Agent in your cluster.
+[Follow Docker's Centos installation guide](https://docs.docker.com/engine/installation/centos/) for information on how to get Docker installed.
+
 
 ## 1. Configure firewall
 You will either need to configure the firewalls on each node in your cluster (recommended) to allow access to the cluster services or disable them completely.  This section contains configuration examples for `firewalld`.  If you use a different firewall, check your documentation for how to open the listed ports.
@@ -37,7 +41,7 @@ sudo firewall-cmd --zone=public --add-port=5051/tcp --permanent
 sudo systemctl restart firewalld
 ```
 
-## 1. Download the Calico Mesos Plugin
+## 2. Download the Calico Mesos Plugin
 The Calico-Mesos plugin is available for download from the [calico-mesos repository releases](https://github.com/projectcalico/calico-mesos/releases). In this example, we will install the binary to the `/calico` directory.
 
 ```
@@ -46,47 +50,13 @@ chmod +x calico_mesos
 sudo mkdir /calico
 sudo mv calico_mesos /calico/calico_mesos
 ```
-## 2. Create the modules.json Configuration File
+## 3. Create the modules.json Configuration File
 To enable Calico networking in Mesos, you must create a `modules.json` file. When provided to the Mesos Agent process, this file will connect Mesos with the Net-Modules libraries as well as the Calico networking plugin, thus allowing Calico to 
 receive networking events from Mesos.
 
 ```
-wget https://raw.githubusercontent.com/projectcalico/calico-mesos/master/packages/sources/modules.json
+wget https://raw.githubusercontent.com/projectcalico/calico-mesos-deployments/master/packages/sources/modules.json
 sudo mv modules.json /calico/modules.json
-```
-## 3. Install Docker
-
-**Docker must be installed on each Mesos Agent** that is:
-- deploying calico via the packaged Calico container (recommended). Users who prefer to run Calico as a baremetal service (coming soon!) do not need to install Docker on each Agent, or...
-- that will be launching Docker containers through Mesos.
-
-Run the following commands to install Docker:
-
-```
-sudo yum update
-sudo yum install -y docker docker-selinux
-sudo systemctl enable docker.service
-sudo systemctl start docker.service
-```
-### Verify Docker installation
-
-```
-sudo docker run hello-world
-```
-
-### Add user to Docker Group (Optional)
-You may also want to create a `docker` group and add your local user to the group.  This means you can drop the `sudo` in the `docker ...` commands that follow.
-
-```
-sudo groupadd docker
-sudo usermod -aG docker `whoami`
-sudo systemctl restart docker.service
-```
-
-Then log out (`exit`) and log back in to pick up your new group association.  Verify your user has access to Docker without sudo
-
-```
-docker ps
 ```
 
 ## 4. Run Calico Node
@@ -180,7 +150,7 @@ sudo ETCD_AUTHORITY=<ETCD-IP:PORT> /usr/local/sbin/mesos-slave \
 ```
 We provide the `ETCD_AUTHORITY` environment variable here to allow the  `calico_mesos` plugin to function properly when called by `mesos-slave`. Be sure to replace it with the address of your running etcd server.
 
-## 9. Launch Tasks
-With your cluster up and running, you can now [Launch Tasks with Calico Networking using Marathon](../README.md#3-launching-tasks).
+## Next steps
+See the [Using Calico Mesos Guide](UsingCalicoMesos.md) for info on how to test your cluster and launch tasks networked with Calico.
 
 [![Analytics](https://ga-beacon.appspot.com/UA-52125893-3/calico-containers/docs/mesos/ManualInstallCalicoMesos.md?pixel)](https://github.com/igrigorik/ga-beacon)

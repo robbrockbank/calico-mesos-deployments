@@ -2,15 +2,15 @@
 
 In these instructions, we will run a Mesos Cluster where all cluster services run as Docker containers.  This speeds deployment and will prevent pesky issues like incompatible dependencies.  At the end, we will have a multi host mesos cluster that looks like the following:
 
-Mesos-Master:
- * Zookeeper
+Master Host:
+ * zookeeper
  * etcd
- * Mesos Master
- * Marathon (Mesos framework)
+ * mesos-master
+ * marathon (Mesos framework)
 
-Mesos-Agent:
- * Mesos Agent
- * Calico
+Agent Host:
+ * mesos-agent
+ * calico
 
 >We'll concentrate on getting Mesos and Calico up and running as quickly as possible.  This means leaving out the details of how to configure highly-available services.  Instead, we'll install Zookeeper, etcd, and the Mesos Master on the same "master" node.
 
@@ -45,41 +45,22 @@ Also important are that Calico and Mesos have the same view of the (non-fully-qu
 
 must be unique for each node in your cluster.  Both Calico and Mesos use this value to identify the host.
 
-
-# Prepare Master
-Perform the following steps on one host which will be designated the "Master".
-
-## 1. Configure your firewall
-
-You will either need to configure the firewalls on each node in your cluster (recommended) to allow access to the cluster services or disable it completely.  Included in this section is configuration examples for `firewalld`.
-
-Master node(s) require
-
-| Service Name | Port/protocol     |
-|--------------|-------------------|
-| zookeeper    | 2181/tcp          |
-| mesos-master | 5050/tcp          |
-| etcd         | 2379/tcp 4001/tcp |
-| marathon     | 8080/tcp          |
-
-Example `firewalld` config:
-
-    sudo firewall-cmd --zone=public --add-port=2181/tcp --permanent
-    sudo firewall-cmd --zone=public --add-port=5050/tcp --permanent
-    sudo firewall-cmd --zone=public --add-port=2379/tcp --permanent
-    sudo firewall-cmd --zone=public --add-port=4001/tcp --permanent
-    sudo firewall-cmd --zone=public --add-port=8080/tcp --permanent
-    sudo systemctl restart firewalld
-
-# 2. Clone this Repo
-We'll be using the systemd files in this repo, so clone it onto your agent:
+# Getting Started
+## Master Host
+### 1. Download Unit Files
+We'll be using the systemd files in this repo, so grab the tar:
 
     curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
     tar -xvf calico-mesos-deployments-master.tar.gz
     cd calico-mesos-deployments-master/units/
 
-# 2. Zookeeper
-Download the Zookeeper image, as well as the systemd service which will ensure Zookeeper is kept running:
+### 2. Zookeeper
+The zookeeper service is configured to bind to port 2181 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands: 
+
+    sudo firewall-cmd --zone=public --add-port=2181/tcp --permanent
+    sudo systemctl restart firewalld
+    
+Next, download and start the Zookeeper image, as well as the systemd service which will ensure Zookeeper is kept running:
 
     docker pull jplock/zookeeper:3.4.5
     sudo cp zookeeper.service /usr/lib/systemd/system/
@@ -91,8 +72,12 @@ Check that the Zookeeper docker container is running with docker and systemd:
     docker ps | grep zookeeper
     sudo systemctl status zookeeper
 
+### 3. Mesos Master
+The mesos-master service is configured to bind to port 5050 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands: 
 
-## 3. Mesos Master
+    sudo firewall-cmd --zone=public --add-port=5050/tcp --permanent
+    sudo systemctl restart firewalld
+    
 Before running the Mesos-Master process, we'll set the IP address of the Master to connect to the Mesos cluster.  Run the following command, replacing `<MASTER_IP>` with the Master's IP address.
 
     sudo sh -c 'echo IP=<MASTER_IP> > /etc/sysconfig/mesos-master'
@@ -109,10 +94,14 @@ Check that the Mesos Master docker container is running with docker and systemd:
     docker ps | grep mesos-master
     sudo systemctl status mesos-master
 
-## 4. Etcd
+### 4. Etcd
+The etcd service is configured to bind to port 2379 and 4001 on the host. If you have a firewall enabled, open these ports. If you are using firewalld, run the following commands: 
 
-`etcd` needs your fully qualified domain name to start correctly.  The included
-unit file looks for this value in `/etc/sysconfig/etcd`.
+    sudo firewall-cmd --zone=public --add-port=2379/tcp --permanent
+    sudo firewall-cmd --zone=public --add-port=4001/tcp --permanent
+    sudo systemctl restart firewalld
+
+etcd needs your fully qualified domain name to start correctly.  The included unit file looks for this value in `/etc/sysconfig/etcd`.
 
     sudo sh -c 'echo FQDN=`hostname -f` > /etc/sysconfig/etcd'
     docker pull quay.io/coreos/etcd:v2.2.0
@@ -125,10 +114,15 @@ Check that the etcd docker container is running with docker and systemd:
     docker ps | grep etcd
     sudo systemctl status etcd
 
-## 5. Marathon
-Lastly, start Marathon, a Mesos framework you can use to start arbitrary tasks on your cluster.
+### 5. Marathon
+The Marathon service is configured to bind to port 8080 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands: 
 
-    docker pull djosborne/marathon:docker
+    sudo firewall-cmd --zone=public --add-port=8080/tcp --permanent
+    sudo systemctl restart firewalld
+    
+Next, start Marathon:
+
+    docker pull mesosphere/marathon:v0.14.0
     sudo cp marathon.service /usr/lib/systemd/system/
     sudo systemctl enable marathon.service
     sudo systemctl start marathon.service
@@ -138,26 +132,20 @@ Check that the Marathon docker container is running with docker and systemd:
     docker ps | grep marathon
     sudo systemctl status marathon
 
-# Mesos-Agent
-Perform the following steps on each Agent in your cluster.
+## Agent Host
+### 1. Download Unit Files
+We'll be using the systemd files in this repo, so grab the tar:
 
-## 1. Configure your Firewall
-For each agent, you will either need to configure the firewalls on each node in your cluster (recommended) to allow access to the cluster services or disable it completely.  Included in this section is configuration examples for `firewalld`.
-
-Agent (compute) nodes require
-
-| Service Name | Port/protocol     |
-|--------------|-------------------|
-| BIRD (BGP)   | 179/tcp           |
-| mesos-agent  | 5051/tcp          |
-
-Example `firewalld` config
+    curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
+    tar -xvf calico-mesos-deployments-master.tar.gz
+    cd calico-mesos-deployments-master/units/
+    
+### 2. Calico
+The Calico service is configured to bind to port 179 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands:
 
     sudo firewall-cmd --zone=public --add-port=179/tcp --permanent
-    sudo firewall-cmd --zone=public --add-port=5051/tcp --permanent
     sudo systemctl restart firewalld
-    
-## 2. Calico
+
 `calicoctl` is a small CLI tool to control your Calico network.  It's used to start Calico services on your compute host, as well as inspect and modify Calico configuration.
 
     curl -L -O https://github.com/projectcalico/calico-containers/releases/download/v0.8.0/calicoctl
@@ -183,7 +171,11 @@ Verify Calico is running
     docker ps | grep calico-node
     calicoctl status
 
-## 3. Mesos-Agent
+### 3. Mesos-Agent
+The Mesos-Agent service is configured to bind to port 5051 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands:
+
+    sudo firewall-cmd --zone=public --add-port=5051/tcp --permanent
+    sudo systemctl restart firewalld
 
 Use the following commands to tell the Mesos Agent where to find Zookeeper.  The Mesos Agent uses Zookeeper to keep track of the current Mesos Master.  We installed it on the same host as the Mesos Master earlier, so substitute the name or IP of that host for `<ZOOKEEPER_IP>`:
 
