@@ -5,8 +5,20 @@
 - For more information on Calico's Mesos integraiton, see [github.com/projectcalico/calico-mesos][calico-mesos]
 - Still have questions? Contact us on the #Mesos channel of [Calico's Slack][calico-slack].
 
+### Release Version Info
+Releases of this Repo will be versioned as follows:
+
+    <mesos-version>_N<netmodules-version>_C<calico-mesos-version>
+    
+For example `0.26.0_N0.1.0_C0.1.3` includes:
+- [`mesos@0.26.0`](https://github.com/apache/mesos/releases/tag/0.26.0)
+- [`netmodules@0.1.0`](https://github.com/mesosphere/net-modules/releases/tag/0.1.0)
+- [`calico-mesos@0.1.3`](https://github.com/projectcalico/calico-mesos/releases/tag/v0.1.3)
+    
+When choosing a release, first identify which version of Mesos you need. In general, we recommend using the highest stable release. Then find the latest release with that prefix.
+
 ### Mesos Version Compatability
-Calico support is actively being developed. Use the following information to ensure you choose the right version:
+Calico support is under active development. Use the following information to ensure you choose the right version of Mesos:
 - **Mesos 0.27:** Recommended. Adds calico Networking for Docker Images (via unified containerizer)
 - **Mesos 0.26:** Supported. Calico supported Networking of Mesos Tasks
 - **Mesos 0.25:** Deprecated. Calico works with Mesos 0.25, but we recommend against using it as there aren't any Frameworks (including Marathon) which support the Networkinfo specs from 0.25 (which were modified for 0.26)
