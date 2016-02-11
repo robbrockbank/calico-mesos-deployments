@@ -39,7 +39,7 @@ The Marathon UI does not yet include a field for specifiying NetworkInfo, so we'
     "apps": [
         {
             "id": "hello-world-1",
-            "cmd": "ifconfig && sleep 30",
+            "cmd": "ip addr && sleep 30",
             "cpus": 0.1,
             "mem": 64.0,
             "ipAddress": {
