@@ -78,12 +78,18 @@ Example `firewalld` config:
     sudo firewall-cmd --zone=public --add-port=4001/tcp --permanent
     sudo firewall-cmd --zone=public --add-port=8080/tcp --permanent
     sudo systemctl restart firewalld
-    
+
+# 2. Clone this Repo
+We'll be using the systemd files in this repo, so clone it onto your agent:
+
+    curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
+    tar -xvf calico-mesos-deployments-master.tar.gz
+    cd calico-mesos-deployments-master/systemd/
+
 # 2. Zookeeper
 Download the Zookeeper image, as well as the systemd service which will ensure Zookeeper is kept running:
 
     docker pull jplock/zookeeper:3.4.5
-    curl -O https://raw.githubusercontent.com/projectcalico/calico-mesos/0.26/dockerized-mesos/config/units/zookeeper.service
     sudo cp zookeeper.service /usr/lib/systemd/system/
     sudo systemctl enable zookeeper.service
     sudo systemctl start zookeeper.service
@@ -101,8 +107,7 @@ Before running the Mesos-Master process, we'll set the IP address of the Master 
 
 Then create and enable the `mesos-master` unit, which starts a Docker container running Mesos-Master:
 
-    docker pull calico/mesos-calico:0.26
-    curl -O https://raw.githubusercontent.com/projectcalico/calico-mesos/0.26/dockerized-mesos/config/units/mesos-master.service
+    docker pull calico/mesos-calico
     sudo cp mesos-master.service /usr/lib/systemd/system/
     sudo systemctl enable mesos-master.service
     sudo systemctl start mesos-master.service
@@ -119,7 +124,6 @@ unit file looks for this value in `/etc/sysconfig/etcd`.
 
     sudo sh -c 'echo FQDN=`hostname -f` > /etc/sysconfig/etcd'
     docker pull quay.io/coreos/etcd:v2.2.0
-    curl -O https://raw.githubusercontent.com/projectcalico/calico-mesos/0.26/dockerized-mesos/config/units/etcd.service
     sudo cp etcd.service /usr/lib/systemd/system/
     sudo systemctl enable etcd.service
     sudo systemctl start etcd.service
@@ -133,7 +137,6 @@ Check that the etcd docker container is running with docker and systemd:
 Lastly, start Marathon, a Mesos framework you can use to start arbitrary tasks on your cluster.
 
     docker pull djosborne/marathon:docker
-    curl -O https://raw.githubusercontent.com/projectcalico/calico-mesos/0.26/dockerized-mesos/config/units/marathon.service
     sudo cp marathon.service /usr/lib/systemd/system/
     sudo systemctl enable marathon.service
     sudo systemctl start marathon.service
@@ -178,7 +181,6 @@ You'll need to configure Calico with the correct location of the etcd service.  
 Then, enable the Calico service via `systemd`
 
     docker pull calico/node:v0.8.0
-    curl -O https://raw.githubusercontent.com/projectcalico/calico-mesos/0.26/dockerized-mesos/config/units/calico.service
     sudo cp calico.service /usr/lib/systemd/system/
     sudo systemctl enable calico.service
     sudo systemctl start calico.service
@@ -201,8 +203,7 @@ You also need to specify the IP address of the Agent to connect to the Mesos clu
 
 Then, enable the Mesos Agent service
 
-    docker pull calico/mesos-calico:0.26
-    curl -O https://raw.githubusercontent.com/projectcalico/calico-mesos/0.26/dockerized-mesos/config/units/mesos-agent.service
+    docker pull calico/mesos-calico
     sudo cp mesos-agent.service /usr/lib/systemd/system/
     sudo systemctl enable mesos-agent.service
     sudo systemctl start mesos-agent.service
@@ -217,4 +218,3 @@ With your Mesos Cluster set up, you can begin launching tasks networked by Calic
 [calico]: http://projectcalico.org
 [mesos]: https://mesos.apache.org/
 [net-modules]: https://github.com/mesosphere/net-modules
-[![Analytics](https://ga-beacon.appspot.com/UA-52125893-3/calico-containers/docs/mesos/Dockerized26Deployment.md?pixel)](https://github.com/igrigorik/ga-beacon)
