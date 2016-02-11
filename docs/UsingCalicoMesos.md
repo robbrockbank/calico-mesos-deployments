@@ -1,8 +1,8 @@
 # Using Calico Mesos
 The following information includes application json and information on launching tasks in a Mesos Cluster with Calico.
 
-## Run the Test Framework
-Before you start launching tasks with Marathon, we suggest launching to Calico-Mesos Test Framework. This Framework will register with mesos directly and launch ping and sleep tasks across your mesos cluster, verifiying netgroup enforcement and network connectivity between tasks.
+## Test Cluster Health
+Before you start launching tasks with Marathon, we suggest running the Calico-Mesos Test Framework. This Framework will register with mesos directly and launch ping and sleep tasks across your mesos cluster, verifiying netgroup enforcement and network connectivity between tasks.
 
 To launch the framework, run the following docker command:
 ```
@@ -55,9 +55,5 @@ Send the `app.json` to marathon to launch it:
 curl -X PUT -H "Content-Type: application/json" http://localhost:8080/v2/groups/calico-apps  -d @app.json
 ```
 
-[calico]: http://projectcalico.org
-[mesos]: https://mesos.apache.org/
-[net-modules]: https://github.com/mesosphere/net-modules
-[docker]: https://www.docker.com/
 [marathon-ip-per-task-doc]: https://github.com/mesosphere/marathon/blob/v0.14.0/docs/docs/ip-per-task.md
 [![Analytics](https://ga-beacon.appspot.com/UA-52125893-3/calico-containers/docs/mesos/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
