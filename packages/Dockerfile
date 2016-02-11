@@ -14,9 +14,12 @@ RUN wget https://github.com/projectcalico/calico-docker/releases/download/${CALI
 # Add sources
 ADD ./sources/ /root/rpmbuild/SOURCES/
 
+# Add calico-mesos binary
+ADD https://github.com/projectcalico/calico-mesos/releases/download/v0.1.3/calico_mesos /root/rpmbuild/SOURCES/
+
 # Build RPM
 ADD ./calico-mesos.spec /root/calico-mesos.spec
 
 # The rpm-builder assumes the calico_mesos binary has been volume mounted to /binary.
 # Here, it is copied into the RPM Source directory,then the RPM build is kicked off.
-CMD bash -c 'cp /binary/calico_mesos root/rpmbuild/SOURCES && rpmbuild -ba /root/calico-mesos.spec'
+CMD rpmbuild -ba /root/calico-mesos.spec
