@@ -76,7 +76,7 @@ We'll be using the systemd files in this repo, so clone it onto your agent:
 
     curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
     tar -xvf calico-mesos-deployments-master.tar.gz
-    cd calico-mesos-deployments-master/systemd/
+    cd calico-mesos-deployments-master/units/
 
 # 2. Zookeeper
 Download the Zookeeper image, as well as the systemd service which will ensure Zookeeper is kept running:

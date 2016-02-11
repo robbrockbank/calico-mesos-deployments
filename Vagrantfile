@@ -68,20 +68,20 @@ Vagrant.configure("2") do |config|
         host.vm.provision :docker, images: ["calico/mesos-calico"]
       end
 
-      # Get the unit files
-      ["etcd", "zookeeper", "marathon", "mesos-master"].each do |service_name| 
-        host.vm.provision "file", source: "dockerized-mesos/config/units/#{service_name}.service", destination: "#{service_name}.service"
-      end
-
       # Configure the Master node of the cluster.
       # The Master needs to run the mesos-master service, etcd, zookeeper, and marathon.
-      if i == 1
+        if i == 1
+        # Get the unit files
+        ["etcd", "zookeeper", "marathon", "mesos-master"].each do |service_name| 
+          host.vm.provision "file", source: "units/#{service_name}.service", destination: "#{service_name}.service"
+        end
+
         # Set firewall rules
         host.vm.provision :shell, inline: "systemctl restart firewalld", privileged: true
         [2181, 5050, 2379, 4001, 8080].each do |port|
           host.vm.provision :shell, inline: "sudo firewall-cmd --zone=public --add-port=#{port}/tcp --permanent"
         end
-      
+
         host.vm.provision :shell, inline: "systemctl restart firewalld", privileged: true
 
         host.vm.provision :shell, inline: "systemctl restart docker", privileged: true
@@ -111,6 +111,10 @@ Vagrant.configure("2") do |config|
 
       # Configure the Agent nodes of the cluster.
       if i > 1
+        ["calico", "mesos-agent"].each do |service_name|
+          host.vm.provision "file", source: "units/#{service_name}.service", destination: "#{service_name}.service"
+        end
+
         # Set firewall rules
         host.vm.provision :shell, inline: "systemctl restart firewalld", privileged: true
         [179, 5051].each do |port|
@@ -125,7 +129,6 @@ Vagrant.configure("2") do |config|
         host.vm.provision :shell, inline: "sh -c 'echo ETCD_AUTHORITY=#{master_ip}:4001 > /etc/sysconfig/calico'", privileged: true
 
         # Start calico service with systemd and check status
-        host.vm.provision "file", source: "dockerized-mesos/config/units/calico.service", destination: "calico.service"
         host.vm.provision :shell, inline: "mv calico.service /usr/lib/systemd/system/", privileged: true
         host.vm.provision :shell, inline: "systemctl enable calico.service", privileged: true
         host.vm.provision :shell, inline: "systemctl start calico.service", privileged: true
@@ -134,7 +137,6 @@ Vagrant.configure("2") do |config|
         # Configure mesos-agent
         host.vm.provision :shell, inline: "sh -c 'echo ZK=#{master_ip} > /etc/sysconfig/mesos-agent'", privileged: true
         host.vm.provision :shell, inline: "sh -c 'echo IP=#{ip} >> /etc/sysconfig/mesos-agent'", privileged: true
-        host.vm.provision "file", source: "dockerized-mesos/config/units/mesos-agent.service", destination: "mesos-agent.service"
         host.vm.provision :shell, inline: "mv mesos-agent.service /usr/lib/systemd/system/", privileged: true
         host.vm.provision :shell, inline: "systemctl enable mesos-agent.service", privileged: true
         host.vm.provision :shell, inline: "systemctl start mesos-agent.service", privileged: true
