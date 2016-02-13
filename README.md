@@ -1,7 +1,14 @@
 # Calico-Mesos Deployments
-**Mesos Packages with Calico**
+This repo provides RPMs and Docker Images for installing Calico Networking for your Mesos Cluster, documentation on how to get up and running, and how to launch calico networked tasks.
 
-This repo provides RPMs and Docker Images for installing Calico Networking for your Mesos Cluster, as well as documentation on how to get up and running.
+<!--- master only -->
+> ![warning](docs/images/warning.png) This document applies to the HEAD of the calico-mesos-deployments source tree.
+>
+> View the calico-mesos-deployments documentation for the latest release [here](https://github.com/projectcalico/calico-mesos-deployments/blob/0.26.0%2B1/README.md).
+<!--- else
+> You are viewing the calico-mesos-deployments documentation for release **release**.
+<!--- end of master only -->
+
 We recommend browsing the docs for the [latest release](https://github.com/projectcalico/calico-mesos-deployments/releases/latest).
 
 - For information on Calico, see [projectcalico.org](http://projectcalico.org)
@@ -12,16 +19,16 @@ We recommend browsing the docs for the [latest release](https://github.com/proje
 We offer several ways to get going. Choose the option below that best matches your needs.
 
 ### a) [Automatic Vagrant Install For a Running Demo Cluster, Fast](docs/DockerizedVagrant.md)
-See what a running Mesos cluster with Calico looks like with just a simple `vagrant up` by following the Vagrant Dockerized Mesos Guide. 
+See what a running Mesos cluster with Calico looks like with just a simple `vagrant up` by following the Vagrant Dockerized Mesos Guide.
 >Note: This guide serves as a quick demo, but is not recommended for production use as it creates a Mesos Master and Agent on the same hypervisor.
 
 ### b) [Manual Dockerized Deployment (Recommended for Easy Updates)](docs/DockerizedDeployment.md)
-For a better understanding of the components in a Mesos cluster with Calico, and the ability to easily customize and update them, follow the [Dockerized Mesos Guide](docs/DockerizedDeployment.md). This deployment is similar to the Vagrant Dockerized demo, but is manually deployed across multiple hosts to simulate a full Mesos Cluster in your data center. The components have been dockerized to allow for easier delivery of updates to Mesos, Netmodules, and calico-mesosand debugging.
+For a better understanding of the components in a Mesos cluster with Calico, and the ability to easily customize and update them, follow the [Dockerized Mesos Guide](docs/DockerizedDeployment.md). This deployment is similar to the Vagrant Dockerized demo, but is manually deployed across multiple hosts to simulate a full Mesos Cluster in your data center. The components have been dockerized to allow for easier delivery of updates to Mesos, Netmodules, and calico-mesos.
 
 **We highly recommend using this deployment as it is the fastest way to receive frequent updates to Netmodules and Calico**
 
 ### c) [RPM Installation](docs/RpmInstallCalicoMesos.md)
-If running Mesos services in docker containers doesn't suit your needs, the Calico-Mesos RPM Installation Guide serves as the next fastest way to get up and running by installing Mesos and Netmodules directly onto your system. 
+If running Mesos services in docker containers doesn't suit your needs, the Calico-Mesos RPM Installation Guide serves as the next fastest way to get up and running by installing Mesos and Netmodules directly onto your system.
 
 ### d) [Manual Compilation and Installation](docs/ManualInstallCalicoMesos.md)
 For an in-depth walkthrough of the full compilation and installation of Mesos, netmodules, and calico, see the Calico-Mesos Manual Install Guide.
