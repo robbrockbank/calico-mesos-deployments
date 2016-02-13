@@ -64,7 +64,7 @@ sudo systemctl status mesos-slave.service
 ```
 
 ## Next steps
-See the [Using Calico Mesos Guide](UsingCalicoMesos.md) for info on how to test your cluster and launch tasks networked with Calico.
+See [Our Guide on Using Calico-Mesos](UsingCalicoMesos.md) for info on how to test your cluster and start launching tasks networked with Calico.
 
 
 [calico-mesos]: https://github.com/projectcalico/calico-mesos/releases/latest

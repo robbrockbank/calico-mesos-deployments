@@ -197,8 +197,9 @@ Check that the Mesos Agent docker container is running with docker and systemd:
     docker ps | grep mesos-agent
     sudo systemctl status mesos-agent
 
-# Next Steps
-With your Mesos Cluster set up, you can begin launching tasks networked by Calico. See our [Information on Launching Tasks with Marathon](UsingCalicoMesos.md) for more information.
+## Next steps
+See [Our Guide on Using Calico-Mesos](UsingCalicoMesos.md) for info on how to test your cluster and start launching tasks networked with Calico.
+
 [calico]: http://projectcalico.org
 [mesos]: https://mesos.apache.org/
 [net-modules]: https://github.com/mesosphere/net-modules
