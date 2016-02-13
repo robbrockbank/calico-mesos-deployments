@@ -50,9 +50,9 @@ must be unique for each node in your cluster.  Both Calico and Mesos use this va
 ### 1. Download Unit Files
 We'll be using the systemd files in this repo, so grab the tar:
 
-    curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
-    tar -xvf calico-mesos-deployments-master.tar.gz
-    cd calico-mesos-deployments-master/units/
+    curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/0.26.0%2B1.tar.gz
+    tar -xvf calico-mesos-deployments-0.26.0-1.tar.gz
+    cd calico-mesos-deployments-0.26.0-1/units/
 
 ### 2. Zookeeper
 The zookeeper service is configured to bind to port 2181 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands: 
@@ -84,7 +84,7 @@ Before running the Mesos-Master process, we'll set the IP address of the Master 
 
 Then create and enable the `mesos-master` unit, which starts a Docker container running Mesos-Master:
 
-    docker pull calico/mesos-calico
+    docker pull calico/mesos-calico:0.26.0-1
     sudo cp mesos-master.service /usr/lib/systemd/system/
     sudo systemctl enable mesos-master.service
     sudo systemctl start mesos-master.service
@@ -136,10 +136,10 @@ Check that the Marathon docker container is running with docker and systemd:
 ### 1. Download Unit Files
 We'll be using the systemd files in this repo, so grab the tar:
 
-    curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
-    tar -xvf calico-mesos-deployments-master.tar.gz
-    cd calico-mesos-deployments-master/units/
-    
+    curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/0.26.0%2B1.tar.g
+    tar -xvf calico-mesos-deployments-0.26.0-1.tar.gz
+    cd calico-mesos-deployments-0.26.0-1/units/
+
 ### 2. Calico
 The Calico service is configured to bind to port 179 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands:
 
@@ -187,7 +187,7 @@ You also need to specify the IP address of the Agent to connect to the Mesos clu
 
 Then, enable the Mesos Agent service
 
-    docker pull calico/mesos-calico
+    docker pull calico/mesos-calico:0.26.0-1
     sudo cp mesos-agent.service /usr/lib/systemd/system/
     sudo systemctl enable mesos-agent.service
     sudo systemctl start mesos-agent.service

@@ -36,9 +36,9 @@ This guide requires a hypervisor with the following specs:
 ## Getting Started
 1. You must run the vagrant script from its location in the repo as it adds the unit files in its path to each host. First, download it:
 ```
-curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
-tar -xvf calico-mesos-deployments-master.tar.gz
-cd calico-mesos-deployments-master
+curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/0.26.0%2B1.tar.gz
+tar -xvf calico-mesos-deployments-0.26.0-1.tar.gz
+cd calico-mesos-deployments-0.26.0-1
 ```
 
 2. Then launch the Vagrant demo:

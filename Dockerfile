@@ -14,7 +14,7 @@
 
 # For details and docs - see https://github.com/phusion/baseimage-docker#getting_started
 
-FROM mesosphere/net-modules
+FROM djosborne/netmodules:0.1.0
 
 ############
 ## Calico ##

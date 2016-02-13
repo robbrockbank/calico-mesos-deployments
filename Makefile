@@ -5,13 +5,13 @@ docker_image.tar: dist/docker/mesos-calico.tar ## Create the calico/mesos-calico
 # TODO: maybe change this so docker runs and handles the caching itself,
 # instead of relying on the .created file.
 dockerized-mesos/.dockerized_mesos.created:
-	docker build -t calico/mesos-calico .
+	docker build -t calico/mesos-calico:0.26.0-1 
 	touch dockerized-mesos/.mesos_calico_image.created
 
 # Tar up the calico/mesos-calico docker image
 dist/docker/mesos-calico.tar: docker_image
 	mkdir -p dist/docker
-	docker save -o dist/docker/mesos-calico.tar calico/mesos-calico
+	docker save -o dist/docker/mesos-calico.tar calico/mesos-calico:0.26.0-1
 
 ## Create the calico-mesos RPM
 rpm:
@@ -26,7 +26,7 @@ clean:
 	find . -name '*.created' -exec rm -f {} +
 	-rm -rf dist
 	-rm -f mesos-calico.tar
-	-docker rmi calico/mesos-calico
+	-docker rmi calico/mesos-calico:0.26.0-1
 	-docker rmi calico/mesos-rpm-builder
 
 help: # Some kind of magic from https://gist.github.com/rcmachado/af3db315e31383502660
