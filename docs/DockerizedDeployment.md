@@ -1,3 +1,11 @@
+<!--- master only -->
+> ![warning](images/warning.png) This document applies to the HEAD of the calico-containers source tree.
+>
+> View the calico-mesos-deployments documentation for the latest release [here](https://github.com/projectcalico/calico-mesos-deployments/blob/0.26.0_N0.1.0_C0.1.3/docs/DockerizedDeployment.md).
+<!--- else
+> You are viewing the calico-mesos-deployments documentation for release **release**.
+<!--- end of master only -->
+
 # Manually Deploying a Dockerized Mesos Cluster with Calico
 
 In these instructions, we will run a Mesos Cluster where all cluster services run as Docker containers.  This speeds deployment and will prevent pesky issues like incompatible dependencies.  At the end, we will have a multi host mesos cluster that looks like the following:
