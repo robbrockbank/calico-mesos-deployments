@@ -72,7 +72,7 @@ where `X` is the instance number.
 Each agent instance will require additional storage and memory resources.
 
 ## Next steps
-See the [Using Calico Mesos Guide](UsingCalicoMesos.md) for info on how to test your cluster and launch tasks networked with Calico.
+See [Our Guide on Using Calico-Mesos](UsingCalicoMesos.md) for info on how to test your cluster and start launching tasks networked with Calico.
 
 [virtualbox]: https://www.virtualbox.org/
 [vagrant]: https://www.vagrantup.com/

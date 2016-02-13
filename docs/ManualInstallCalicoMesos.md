@@ -151,6 +151,6 @@ sudo ETCD_AUTHORITY=<ETCD-IP:PORT> /usr/local/sbin/mesos-slave \
 We provide the `ETCD_AUTHORITY` environment variable here to allow the  `calico_mesos` plugin to function properly when called by `mesos-slave`. Be sure to replace it with the address of your running etcd server.
 
 ## Next steps
-See the [Using Calico Mesos Guide](UsingCalicoMesos.md) for info on how to test your cluster and launch tasks networked with Calico.
+See [Our Guide on Using Calico-Mesos](UsingCalicoMesos.md) for info on how to test your cluster and start launching tasks networked with Calico.
 
 [![Analytics](https://ga-beacon.appspot.com/UA-52125893-3/calico-containers/docs/mesos/ManualInstallCalicoMesos.md?pixel)](https://github.com/igrigorik/ga-beacon)
