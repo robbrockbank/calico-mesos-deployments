@@ -53,6 +53,13 @@ Also important are that Calico and Mesos have the same view of the (non-fully-qu
 
 must be unique for each node in your cluster.  Both Calico and Mesos use this value to identify the host.
 
+## SSL
+The Marathon build we'll be using requires SSL enabled in Mesos on each Master and Slave in order to pull docker images from dockerhub. The systemd services we'll be using in this guide are already configured to search for the appropriate SSL keys in `/certs`. Run the following commands on each Master and slave to place those certs:
+
+      sudo mkdir /keys
+      sudo openssl genrsa -f4  -out /keys/key.pem 4096
+      sudo openssl req -new -batch -x509  -days 365 -key /keys/key.pem -out /keys/cert.pem
+
 # Getting Started
 ## Master Host
 ### 1. Download Unit Files
