@@ -64,6 +64,37 @@ Send the `app.json` to marathon to launch it:
 ```
 curl -X PUT -H "Content-Type: application/json" http://localhost:8080/v2/groups/calico-apps  -d @app.json
 ```
+
+#### Launching Docker Images
+The release of Mesos 0.27.0 includes changes to the Mesos Containerizer which enable it to launch docker images. Using an experimental build of Marathon (`djosborne/marathon:docker`), we can launch  docker images networked with calico with the following json blob:
+```
+{
+    "id":"/calico-apps",
+    "apps": [
+        {
+            "id": "unified-1",
+            "cmd": "ip addr && sleep 30",
+            "cpus": 0.1,
+            "mem": 64.0,
+            "ipAddress": {
+                "groups": ["my-group-1"]
+            },
+            "container": {
+                "type": "MESOS",
+                "mesos": {
+                    "image": {
+                        "type": "DOCKER",
+                        "docker": {
+                            "name": "ubuntu:14.04"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
+```
+
 [calico-slack]: https://calicousers-slackin.herokuapp.com/
 [marathon-ip-per-task-doc]: https://github.com/mesosphere/marathon/blob/v0.14.0/docs/docs/ip-per-task.md
 [![Analytics](https://ga-beacon.appspot.com/UA-52125893-3/calico-containers/docs/mesos/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
