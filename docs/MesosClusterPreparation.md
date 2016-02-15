@@ -1,11 +1,3 @@
-<!--- master only -->
-> ![warning](images/warning.png) This document applies to the HEAD of the calico-mesos-deployments source tree.
->
-> View the calico-mesos-deployments documentation for the latest release [here](https://github.com/projectcalico/calico-mesos-deployments/blob/0.26.0%2B1/README.md).
-<!--- else
-> You are viewing the calico-mesos-deployments documentation for release **release**.
-<!--- end of master only -->
-
 # Mesos Cluster Preparation: etcd & zookeeper
 This guide will launch etcd and zookeeper as docker containers bound to their host's networking namespace. While most Mesos deployments will run these services on specific, dedicated machines chosen to maximize availability, we suggest following this guide on whichever machine is running your Mesos Master process, for simplicity.
 

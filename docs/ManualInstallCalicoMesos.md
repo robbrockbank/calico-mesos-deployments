@@ -1,11 +1,3 @@
-<!--- master only -->
-> ![warning](images/warning.png) This document applies to the HEAD of the calico-mesos-deployments source tree.
->
-> View the calico-mesos-deployments documentation for the latest release [here](https://github.com/projectcalico/calico-mesos-deployments/blob/0.26.0%2B1/README.md).
-<!--- else
-> You are viewing the calico-mesos-deployments documentation for release **release**.
-<!--- end of master only -->
-
 # Manually Install Calico and Mesos on Agent
 This tutorial will walk you through installing Mesos, Netmodules, and Calico onto a Centos host to create a Mesos agent compatible with Calico.
 

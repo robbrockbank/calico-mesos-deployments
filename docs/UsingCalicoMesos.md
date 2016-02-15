@@ -1,11 +1,3 @@
-<!--- master only -->
-> ![warning](images/warning.png) This document applies to the HEAD of the calico-mesos-deployments source tree.
->
-> View the calico-mesos-deployments documentation for the latest release [here](https://github.com/projectcalico/calico-mesos-deployments/blob/0.26.0%2B1/README.md).
-<!--- else
-> You are viewing the calico-mesos-deployments documentation for release **release**.
-<!--- end of master only -->
-
 # Using Calico Mesos
 The following information includes application json and information on launching tasks in a Mesos Cluster with Calico.
 

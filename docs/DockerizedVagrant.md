@@ -1,11 +1,3 @@
-<!--- master only -->
-> ![warning](images/warning.png) This document applies to the HEAD of the calico-mesos-deployments source tree.
->
-> View the calico-mesos-deployments documentation for the latest release [here](https://github.com/projectcalico/calico-mesos-deployments/blob/0.26.0%2B1/README.md).
-<!--- else
-> You are viewing the calico-mesos-deployments documentation for release **release**.
-<!--- end of master only -->
-
 # Deploying a Vagrant Dockerized Mesos Cluster with Calico
 This guide will start a running Mesos cluster with Calico Networking using a simple `vagrant up`. Note: This guide serves as a quick demo, but is not recommended for production use as it creates a Mesos Master and Agent on the same hypervisor.
 
@@ -44,9 +36,9 @@ This guide requires a hypervisor with the following specs:
 ## Getting Started
 1. You must run the vagrant script from its location in the repo as it adds the unit files in its path to each host. First, download it:
 ```
-curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
-tar -xvf calico-mesos-deployments-master.tar.gz
-cd calico-mesos-deployments-master
+curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/0.27.0%2B1.tar.gz
+tar -xvf calico-mesos-deployments-0.27.0%2B1.tar.gz
+cd calico-mesos-deployments-0.27.0-1
 ```
 
 2. Then launch the Vagrant demo:

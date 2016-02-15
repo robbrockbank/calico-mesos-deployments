@@ -1,11 +1,3 @@
-<!--- master only -->
-> ![warning](images/warning.png) This document applies to the HEAD of the calico-mesos-deployments source tree.
->
-> View the calico-mesos-deployments documentation for the latest release [here](https://github.com/projectcalico/calico-mesos-deployments/blob/0.26.0%2B1/README.md).
-<!--- else
-> You are viewing the calico-mesos-deployments documentation for release **release**.
-<!--- end of master only -->
-
 # RPM Install Calico-Mesos
 This tutorial will walk through installing prebuilt RPMs containg Mesos, Netmodules, and Calico. At the completion of this guide, you will have a Mesos Slave ready to launch tasks with Calico networking.
 
@@ -40,7 +32,7 @@ sudo yum update
 
 Now, download and install the RPMs:
 ```
-wget https://github.com/projectcalico/calico-mesos-deployments/releases/download/v0.1.3/calico-mesos-rpms.tar
+curl -O https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.0%2B1/calico-mesos-rpms.tar
 tar -xvf calico-mesos-rpms.tgz
 sudo yum install -y calico-mesos-rpms/*.rpm
 ```
