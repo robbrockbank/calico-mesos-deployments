@@ -70,11 +70,11 @@ We'll be using the systemd files in this repo, so grab the tar:
     cd calico-mesos-deployments-master/units/
 
 ### 2. Zookeeper
-The zookeeper service is configured to bind to port 2181 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands: 
+The zookeeper service is configured to bind to port 2181 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands:
 
     sudo firewall-cmd --zone=public --add-port=2181/tcp --permanent
     sudo systemctl restart firewalld
-    
+
 Next, download and start the Zookeeper image, as well as the systemd service which will ensure Zookeeper is kept running:
 
     docker pull jplock/zookeeper:3.4.5
@@ -88,11 +88,11 @@ Check that the Zookeeper docker container is running with docker and systemd:
     sudo systemctl status zookeeper
 
 ### 3. Mesos Master
-The mesos-master service is configured to bind to port 5050 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands: 
+The mesos-master service is configured to bind to port 5050 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands:
 
     sudo firewall-cmd --zone=public --add-port=5050/tcp --permanent
     sudo systemctl restart firewalld
-    
+
 Before running the Mesos-Master process, we'll set the IP address of the Master to connect to the Mesos cluster.  Run the following command, replacing `<MASTER_IP>` with the Master's IP address.
 
     sudo sh -c 'echo IP=<MASTER_IP> > /etc/sysconfig/mesos-master'
@@ -110,7 +110,7 @@ Check that the Mesos Master docker container is running with docker and systemd:
     sudo systemctl status mesos-master
 
 ### 4. Etcd
-The etcd service is configured to bind to port 2379 and 4001 on the host. If you have a firewall enabled, open these ports. If you are using firewalld, run the following commands: 
+The etcd service is configured to bind to port 2379 and 4001 on the host. If you have a firewall enabled, open these ports. If you are using firewalld, run the following commands:
 
     sudo firewall-cmd --zone=public --add-port=2379/tcp --permanent
     sudo firewall-cmd --zone=public --add-port=4001/tcp --permanent
@@ -130,11 +130,11 @@ Check that the etcd docker container is running with docker and systemd:
     sudo systemctl status etcd
 
 ### 5. Marathon
-The Marathon service is configured to bind to port 8080 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands: 
+The Marathon service is configured to bind to port 8080 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands:
 
     sudo firewall-cmd --zone=public --add-port=8080/tcp --permanent
     sudo systemctl restart firewalld
-    
+
 Next, start Marathon:
 
     docker pull mesosphere/marathon:v0.14.0
@@ -154,7 +154,7 @@ We'll be using the systemd files in this repo, so grab the tar:
     curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
     tar -xvf calico-mesos-deployments-master.tar.gz
     cd calico-mesos-deployments-master/units/
-    
+
 ### 2. Calico
 The Calico service is configured to bind to port 179 on the host. If you have a firewall enabled, open this port. If you are using firewalld, run the following commands:
 
