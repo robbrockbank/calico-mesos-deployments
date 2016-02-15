@@ -40,7 +40,7 @@ sudo yum update
 
 Now, download and install the RPMs:
 ```
-wget https://github.com/projectcalico/calico-mesos-deployments/releases/download/v0.1.3/calico-mesos-rpms.tar
+curl -O https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.0%2B1/calico-mesos-rpms.tar
 tar -xvf calico-mesos-rpms.tgz
 sudo yum install -y calico-mesos-rpms/*.rpm
 ```
