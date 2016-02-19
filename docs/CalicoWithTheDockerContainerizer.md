@@ -6,7 +6,7 @@
 > You are viewing the calico-mesos-deployments documentation for release **release**.
 <!--- end of master only -->
 
-# Calico with the Marathon and the Mesos Docker Containerizer
+# Calico with Marathon and the Mesos Docker Containerizer
 
 The following instructions outline the steps required to enable and manage 
 Calico networked containers launched from Marathon using the Mesos Docker
