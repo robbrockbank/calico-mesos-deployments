@@ -60,7 +60,7 @@ On each agent:
 To install Calico on each agent, run the following commands on each agent:
 
 ```
-wget https://github.com/projectcalico/calico-containers/releases/download/v0.16.1/calicoctl
+wget https://github.com/projectcalico/calico-containers/releases/download/v0.17.0/calicoctl
 chmod a+x calicoctl 
 sudo ETCD_AUTHORITY=<IP Address>:4001 ./calicoctl node --libnetwork
 ```
@@ -122,61 +122,39 @@ own Calico profile.
 #### Create a Docker network
 
 To create a Docker network using Calico, run the `docker network create`
-command specifying "calico" as both the network and IPAM driver.  For example,
-to create a network called `data-tier` run the following command:
+command specifying "calico" as both the network and IPAM driver.
+
+For example, suppose we want to provide network policy for a set of database
+containers.  We can create a network called `databases` with the the following
+command:
 
 ```
-docker network create --driver calico --ipam-driver calico data-tier 
+docker network create --driver calico --ipam-driver calico databases 
 ```
 
-This command returns a "network ID".  You can also run 
-`docker network inspect <network name>` to manually obtain the network ID from
-the network name.
-  
-For example, here we create a network and then inspect it.  You can see the 
-ID returned by the creation is also returned by network inspection.
+#### View the policy associated with the network
+
+You can use the `calicoctl profile <profile> rule show` to display the
+rules in the profile associated with the `databases` network.
+
+The network name can be supplied as the profile name and the `calicoctl` tool
+will look up the profile associated with that network.
 
 ```
-$ docker network create --driver calico --ipam-driver calico data-tier
-c36ddf3b
-$ docker network inspect -f '{{.ID}}' data-tier
-c36ddf3b
-```
-
->  This example uses shortened network IDs for clarity.
-
-#### Networks and Calico Profiles
-
-By default, when a network is created the corresponding Calico profile contains
-rules which allow full communication between containers on the same network.
-
-We can see this by using `calicoctl profile <profile> rule show` to display the
-rules in the profile associated with the network.  The name of the profile is 
-the same as the network ID.
-
-In the example above:
-
-```
-$ calicoctl profile c36ddf3b rule show
+$ calicoctl profile databases rule show
 Inbound rules:
-   1 allow from tag c36ddf3b
+   1 allow from tag databases
 Outbound rules:
    1 allow
 ```
 
-Each profile has an identically named tag.  You can think of the tag as a
-way to identify the containers using the particular profile, or within the 
-corresponding network.
+As you can see, the default rules allow all outbound traffic and accept inbound
+traffic only from containers attached the "databases" network.
 
-The default rules state that the container allows all outbound traffic, but
-only accepts inbound traffic from containers with the same tag.  In other words,
-only containers within the same network can communicate with each other.
+> Note that when managing profiles created by the Calico network driver, the
+> tag and network name can be regarded as the same thing.
 
-> Note that we are planning a future release which will allow network names to
-> be used rather than network IDs.  This will simplify policy management as it
-> will not be necessary to map between network names and IDs.
-
-#### Configuring network policy
+#### Configuring the network policy
 
 Calico has a rich set of policy rules that can be leveraged.  Rules can be
 created to allow and disallow packets based on a variety of parameters such
@@ -185,33 +163,36 @@ as source and destination CIDR, port and tag.
 The `calicoctl profile <profile> rule add` and `calicoctl profile <profile> rule remove`
 commands can be used to add and remove rules in the profile.
   
-As an example, suppose the data-tier network represents a tier of MySQL
-databases which should allow TCP traffic to port 3306 from containers
-in the application tier.
+As an example, suppose the databases network represents a group of MySQL
+databases which should allow TCP traffic to port 3306 from "application" 
+containers.
 
-For example:
+To achieve that, create a second network called "applications" which the
+application containers will be attached to.  Then, modify the network policy of
+the databases to allow the appropriate inbound traffic from the applications.
 
 ```
-$ docker network create --driver calico --ipam-driver calico app-tier
-005bc278
-$ ./calicoctl profile c36ddf3b rule add inbound allow tcp from tag 005bc278 to ports 3306
+$ docker network create --driver calico --ipam-driver calico applications
+$ calicoctl profile databases rule add inbound allow tcp from tag applications to ports 3306
 ```
 
-These commands do the following:
--  create a second network called "app-tier" which represents the containers
-   in the application tier.  This has a network ID of "005bc278" which directly 
-   corresponds to the name of the Calico profile assigned to the container and
-   the "tag" that identifies all containers in this network.
--  add a new rule to the data-tier that we created earlier that allows inbound
-   TCP traffic from the "005bc278" tag (i.e. from containers in the app-tier)
-   to port 3306.
-   
+The second command adds a new rule to the databases network policy that allows
+inbound TCP traffic from the applications.
+
+You can view the updated network policy of the databases to show the newly
+added rule:
+
+```
+$ calicoctl profile databases rule show
+Inbound rules:
+   1 allow from tag databases
+   2 allow tcp from tag applications to ports 3306
+Outbound rules:
+   1 allow
+```
+
 For more details on the syntax of the rules, run `calicoctl profile --help` to
 display the valid profile commands.
-
-For more details take a look at our 
-[Advanced Network Policy guide](https://github.com/projectcalico/calico-containers/blob/master/docs/AdvancedNetworkPolicy.md).
-
 
 ## Launching a container
 
@@ -220,7 +201,7 @@ through Mesos using the standard Marathon UI and API.
 
 #### Launching a container through the UI
 
-Through the UI, launch a Docker task as normal.  Select an arbitrary network
+Through the UI, launch a Docker task as normal.  Select an arbitrary(*) network
 (Bridge or Host), and then provide the following additional parameter 
 (under the Docker options)
 
@@ -229,8 +210,10 @@ Key = net
 Value = <network name>
 ```
 
-Where `<network name>` is the name of the network, for example "data-tier".
+Where `<network name>` is the name of the network, for example "databases".
 
+> (*) The selection is arbitrary because the additional net parameter overrides
+> the selected network type.
 
 #### Launching a container with a JSON blob
 
@@ -251,7 +234,7 @@ the net parameter in the request.  For example:
                 "docker": {
                     "image": "busybox",
                     "parameters": [
-                        {"key": "net", "value": "data-tier"}
+                        {"key": "net", "value": "databases"}
                     ]
                 }
             }
