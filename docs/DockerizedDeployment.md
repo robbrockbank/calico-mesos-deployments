@@ -163,7 +163,7 @@ The Calico service is configured to bind to port 179 on the host. If you have a 
 
 `calicoctl` is a small CLI tool to control your Calico network.  It's used to start Calico services on your compute host, as well as inspect and modify Calico configuration.
 
-    curl -L -O https://github.com/projectcalico/calico-containers/releases/download/v0.8.0/calicoctl
+    curl -L -O https://github.com/projectcalico/calico-containers/releases/download/v0.17.0/calicoctl
     chmod +x calicoctl
     sudo mv calicoctl /usr/bin/
 
@@ -175,7 +175,7 @@ You'll need to configure Calico with the correct location of the etcd service.  
 
 Then, enable the Calico service via `systemd`
 
-    docker pull calico/node:v0.8.0
+    docker pull calico/node:v0.17.0
     sudo cp calico.service /usr/lib/systemd/system/
     sudo systemctl enable calico.service
     sudo systemctl start calico.service

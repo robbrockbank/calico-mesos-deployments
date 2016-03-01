@@ -6,7 +6,7 @@ num_instances = 2
 
 # Change basename of the VM
 instance_name_prefix="calico-mesos"
-calico_node_ver = "v0.8.0"
+calico_node_ver = "v0.17.0"
 calicoctl_url = "https://github.com/projectcalico/calico-containers/releases/download/#{calico_node_ver}/calicoctl"
 
 

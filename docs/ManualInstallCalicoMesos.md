@@ -53,7 +53,7 @@ sudo systemctl restart firewalld
 The Calico-Mesos plugin is available for download from the [calico-mesos repository releases](https://github.com/projectcalico/calico-mesos/releases). In this example, we will install the binary to the `/calico` directory.
 
 ```
-wget https://github.com/projectcalico/calico-mesos/releases/download/v0.1.3/calico_mesos
+wget https://github.com/projectcalico/calico-mesos/releases/download/v0.1.5/calico_mesos
 chmod +x calico_mesos
 sudo mkdir /calico
 sudo mv calico_mesos /calico/calico_mesos

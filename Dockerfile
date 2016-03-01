@@ -20,5 +20,5 @@ FROM djosborne/netmodules
 ## Calico ##
 ############
 ADD packages/sources/modules.json /calico/
-ADD https://github.com/projectcalico/calico-mesos/releases/download/v0.1.3/calico_mesos /calico/calico_mesos
+ADD https://github.com/projectcalico/calico-mesos/releases/download/v0.1.5/calico_mesos /calico/calico_mesos
 RUN chmod +x /calico/calico_mesos

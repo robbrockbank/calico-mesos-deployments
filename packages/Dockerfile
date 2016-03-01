@@ -1,7 +1,7 @@
 FROM centos:7
 
 # Version of calico-mesos plugin
-ENV CALICO_DOCKER_VERSION v0.8.0
+ENV CALICO_DOCKER_VERSION v0.17.0
 
 # Install dependencies
 RUN yum install -y wget rpm-build
@@ -15,7 +15,7 @@ RUN wget https://github.com/projectcalico/calico-docker/releases/download/${CALI
 ADD ./sources/ /root/rpmbuild/SOURCES/
 
 # Add calico-mesos binary
-ADD https://github.com/projectcalico/calico-mesos/releases/download/v0.1.3/calico_mesos /root/rpmbuild/SOURCES/
+ADD https://github.com/projectcalico/calico-mesos/releases/download/v0.1.5/calico_mesos /root/rpmbuild/SOURCES/
 
 # Build RPM
 ADD ./calico-mesos.spec /root/calico-mesos.spec
