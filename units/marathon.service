@@ -1,5 +1,5 @@
 [Unit]
-Description=Mesos Master
+Description=Marathon
 After=mesos-master.service docker.service
 Requires=docker.service
 
