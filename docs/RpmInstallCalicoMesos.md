@@ -53,7 +53,7 @@ A systemd unit file has been provided to start the Calico processes needed by th
 Open `/etc/default/mesos-slave` set the `ETCD_AUTHORITY` and `MASTER` 
 variables to the correct values.  Your file should now look like this:
 ```
-MASTER=zk://<ZOOKEEPER_IP>:2181
+MASTER=zk://<ZOOKEEPER_IP>:2181/mesos
 ETCD_AUTHORITY=<ETCD_IP>:4001
 ```
 
