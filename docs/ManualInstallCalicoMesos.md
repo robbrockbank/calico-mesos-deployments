@@ -161,4 +161,4 @@ We provide the `ETCD_AUTHORITY` environment variable here to allow the  `calico_
 ## Next steps
 See [Our Guide on Using Calico-Mesos](UsingCalicoMesos.md) for info on how to test your cluster and start launching tasks networked with Calico.
 
-[![Analytics](https://ga-beacon.appspot.com/UA-52125893-3/calico-containers/docs/mesos/ManualInstallCalicoMesos.md?pixel)](https://github.com/igrigorik/ga-beacon)
+[![Analytics](https://calico-ga-beacon.appspot.com/UA-52125893-3/calico-containers/docs/mesos/ManualInstallCalicoMesos.md?pixel)](https://github.com/igrigorik/ga-beacon)
