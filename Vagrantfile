@@ -17,6 +17,45 @@ calicoctl_url = "https://github.com/projectcalico/calico-containers/releases/dow
 mesos_netmodules_rpm_url = "https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.0%2B2/mesos-netmodules-rpms.tar"
 calico_mesos_rpm_url = "https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.0%2B2/calico-mesos.rpm"
 
+# Define the install script which restarts docker with flags to use a cluster-store
+$configure_docker=<<SCRIPT
+mkdir -p /etc/systemd/system/docker.service.d/
+cat <<EOF > /etc/systemd/system/docker.service.d/docker.conf
+[Service]
+ExecStart=
+ExecStart=/usr/bin/docker daemon -H fd:// --cluster-store=etcd://${1}:2379
+EOF
+systemctl daemon-reload
+systemctl restart docker.service
+SCRIPT
+
+# Define the install script which installs a systemd service file which
+# launches calico-libnetwork
+$start_calico_libnetwork=<<SCRIPT
+cat <<EOF > /usr/lib/systemd/system/calico-libnetwork.service
+[Unit]
+Description=calico-libnetwork
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStartPre=-/usr/bin/docker rm -f calico-libnetwork
+ExecStart=/usr/bin/docker run --privileged --net=host \\
+ -v /run/docker/plugins:/run/docker/plugins \\
+ --name=calico-libnetwork \\
+ -e ETCD_AUTHORITY=${1}:2379 \\
+ -e ETCD_SCHEME=http \\
+ calico/node-libnetwork:latest
+ExecStop=-/usr/bin/docker stop calico-libnetwork
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl start calico-libnetwork.service
+SCRIPT
+
+
 Vagrant.configure("2") do |config|
   config.vm.box = 'centos/7'
   config.ssh.insert_key = false
@@ -100,13 +139,16 @@ Vagrant.configure("2") do |config|
       
         # Install epel packages
         host.vm.provision :shell, inline: "yum install -y epel-release"
+
+        # Configure docker to use etcd on master as its datastore
+        host.vm.provision :shell, inline: $configure_docker, args: "#{master_ip}"
         
         # Calico-Mesos RPM
         # Check if user has set CALICO_MESOS_RPM_PATH environment variable 
         if ENV.key?("CALICO_MESOS_RPM_PATH")
           # If so, then copy the file from that location onto the agent.
           # The specified file should be the RPM produced by running `make rpm` 
-          # in this (the calico-mesos-deployments). 
+          # in this repo (calico-mesos-deployments). 
           host.vm.provision "file", source: ENV['CALICO_MESOS_RPM_PATH'], destination: "calico-mesos.rpm"
         else
           # If that variable is not set, download the latest release from github.
@@ -118,6 +160,9 @@ Vagrant.configure("2") do |config|
         host.vm.provision :shell, inline: "sh -c 'echo MASTER=zk://#{master_ip}:2181/mesos/ > /etc/default/mesos-slave'"
         host.vm.provision :shell, inline: "sh -c 'echo ETCD_AUTHORITY=#{master_ip}:2379 >> /etc/default/mesos-slave'"
         host.vm.provision :shell, inline: "systemctl start calico-mesos.service"
+
+        # Run calico libnetwork
+        host.vm.provision :shell, inline: $start_calico_libnetwork, args: "#{master_ip}"
 
         # Mesos-Netmodules RPMS
         # Check if user has set MESOS_NETMODULES_TAR_PATH environment variable 
