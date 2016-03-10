@@ -6,32 +6,32 @@
 > You are viewing the calico-mesos-deployments documentation for release **release**.
 <!--- end of master only -->
 
-# Deploying a Vagrant Dockerized Mesos Cluster with Calico
-This guide will start a running Mesos cluster with Calico Networking using a simple `vagrant up`. Note: This guide serves as a quick demo, but is not recommended for production use as it creates a Mesos Master and Agent on the same hypervisor.
-
-If you are looking for a guide to set up a POC in your lab, see the [Manual Dockerized Deployment guide](DockerizedDeployment.md).
+# Vagrant Deployed Mesos Cluster with Calico
+This guide will start a running Mesos cluster with Calico Networking using a simple `vagrant up`. 
+It automates the the same installation procedure that is documented in the [RPM Installation Guide](RpmInstallCalicoMesos.md).
 
 This guide will start two VMs on your hypervisor with the following layout:
 ### Master
+All services on Master are installed from official upstream RPMs.
  * **OS**: `Centos`
  * **Hostname**: `calico-01`
  * **IP**: `172.18.8.101`
- * **Docker Containers**:
-	 * `mesos-master` - (`calico/mesos-calico`)
-	 * `etcd` - (`quay.io/coreos/etcd`)
-	 * `zookeeper` - (`jplock/zookeeper`)
-	 * `marathon` - (`mesosphere/marathon`)
+ * **Running Services**:
+   * `mesos-master`
+   * `etcd`
+   * `zookeeper`
+   * `marathon`
 
 ### Agent
+The Mesos Agent is configured with several custom RPMs. Mesos is installed with Netmodules using the Netmodules RPM bundle, and Calico is added and configured using the calico-mesos.rpm provided in this repository. Once both are installed, the agent will match the following specification:
  * **OS**: `Centos`
  * **Hostname**: `calico-02`
  * **IP**: `172.18.8.102`
  * **Docker Containers**:
-	 * `mesos-agent` - (`calico/mesos-calico`)
-	 * `calico-node` - (`calico/node`)
+   * `mesos-agent`
+   * `calico-node`
 
 ## Prerequisites
-
 This guide requires a hypervisor with the following specs:
 
  * [VirtualBox][virtualbox] to host the Mesos master and slave virtual machines
@@ -43,18 +43,16 @@ This guide requires a hypervisor with the following specs:
 
 ## Getting Started
 1. You must run the vagrant script from its location in the repo as it adds the unit files in its path to each host. First, download it:
-```
-curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
-tar -xvf calico-mesos-deployments-master.tar.gz
-cd calico-mesos-deployments-master
-```
+  ```
+  curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
+  tar -xvf calico-mesos-deployments-master.tar.gz
+  cd calico-mesos-deployments-master
+  ```
 
 2. Then launch the Vagrant demo:
-```
-vagrant up
-```
-
->Note: the script may take up to 30 minutes to complete as it creates the two virtual machines and pulls the docker relevant container images for each.
+  ```
+  vagrant up
+  ```
 
 You can log into each machine by running:
 ```

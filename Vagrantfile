@@ -4,11 +4,18 @@
 # Size of the cluster created by Vagrant
 num_instances = 2
 
-# Change basename of the VM
+# VM Basename
 instance_name_prefix="calico-mesos"
+
+# Version of mesos to install from official mesos repo
+mesos_version = "0.27.1"
+
+# Calico version (for calicoctl and calico-node)
 calico_node_ver = "v0.17.0"
 calicoctl_url = "https://github.com/projectcalico/calico-containers/releases/download/#{calico_node_ver}/calicoctl"
 
+mesos_netmodules_rpm_url = "https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.1%2B1/mesos-netmodules-rpms.tar"
+calico_mesos_rpm_url = "https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.1%2B2/calico-mesos.rpm"
 
 Vagrant.configure("2") do |config|
   config.vm.box = 'centos/7'
@@ -55,96 +62,83 @@ Vagrant.configure("2") do |config|
       host.vm.network :private_network, ip: ip
 
       # Selinux => permissive
-      host.vm.provision :shell, inline: "setenforce permissive", privileged: true
+      host.vm.provision :shell, inline: "setenforce permissive"
 
       # Generate certs
-      host.vm.provision :shell, inline: "mkdir /keys", privileged: true
-      host.vm.provision :shell, inline: "openssl genrsa -f4  -out /keys/key.pem 4096", privileged: true
-      host.vm.provision :shell, inline: "openssl req -new -batch -x509  -days 365 -key /keys/key.pem -out /keys/cert.pem", privileged: true
+      host.vm.provision :shell, inline: "mkdir /keys"
+      host.vm.provision :shell, inline: "openssl genrsa -f4  -out /keys/key.pem 4096"
+      host.vm.provision :shell, inline: "openssl req -new -batch -x509  -days 365 -key /keys/key.pem -out /keys/cert.pem"
 
-      # Install docker, and load in the custom mesos-calico image
-      host.vm.provision :docker
-
-      # If the MESOS_CALICO_TAR environment variable is true, load the local calico-mesos docker image from file
-      if ENV["MESOS_CALICO_TAR"] == "true"
-        host.vm.provision "file", source: "dist/docker/mesos-calico.tar", destination: "mesos-calico.tar"
-        host.vm.provision :shell, inline: "sudo docker load < mesos-calico.tar"
-      else
-        host.vm.provision :docker, images: ["calico/mesos-calico"]
-      end
-
-      # Configure the Master node of the cluster.
-      # The Master needs to run the mesos-master service, etcd, zookeeper, and marathon.
-        if i == 1
-        # Get the unit files
-        ["etcd", "zookeeper", "marathon", "mesos-master"].each do |service_name| 
-          host.vm.provision "file", source: "units/#{service_name}.service", destination: "#{service_name}.service"
-        end
-
-        # Set firewall rules
-        host.vm.provision :shell, inline: "systemctl restart firewalld", privileged: true
-        [2181, 5050, 2379, 4001, 8080].each do |port|
-          host.vm.provision :shell, inline: "sudo firewall-cmd --zone=public --add-port=#{port}/tcp --permanent"
-        end
-
-        host.vm.provision :shell, inline: "systemctl restart firewalld", privileged: true
-
-        host.vm.provision :shell, inline: "systemctl restart docker", privileged: true
-
-        # Etcd
-        host.vm.provision :shell, inline: "echo FQDN=`hostname -f` > /etc/sysconfig/etcd"
-        host.vm.provision :shell, inline: "mv etcd.service /usr/lib/systemd/system/", privileged: true
-        host.vm.provision :shell, inline: "systemctl enable etcd.service", privileged: true
-        host.vm.provision :shell, inline: "systemctl start etcd.service", privileged: true
-
+      # Master
+      if i == 1
+        # Add official Mesos Repos
+        host.vm.provision :shell, inline: "rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm"
+        host.vm.provision :shell, inline: "yum -y install mesos-#{mesos_version} marathon mesosphere-zookeeper etcd"
+        
         # Zookeeper
-        host.vm.provision :shell, inline: "mv zookeeper.service /usr/lib/systemd/system/", privileged: true
-        host.vm.provision :shell, inline: "systemctl enable zookeeper.service", privileged: true
-        host.vm.provision :shell, inline: "systemctl start zookeeper.service", privileged: true
+        host.vm.provision :shell, inline: "systemctl start zookeeper"
 
-        # Mesos-master
-        host.vm.provision :shell, inline: "sh -c 'echo IP=#{ip} > /etc/sysconfig/mesos-master'", privileged: true
-        host.vm.provision :shell, inline: "mv mesos-master.service /usr/lib/systemd/system/", privileged: true
-        host.vm.provision :shell, inline: "systemctl enable mesos-master.service", privileged: true
-        host.vm.provision :shell, inline: "systemctl start mesos-master.service", privileged: true
+        # Mesos-Master
+        host.vm.provision :shell, inline: "sh -c 'echo #{master_ip} > /etc/mesos-master/hostname'"
+        host.vm.provision :shell, inline: "sh -c 'echo #{ip} > /etc/mesos-master/ip'"
+        host.vm.provision :shell, inline: "systemctl start mesos-master"
 
         # Marathon
-        host.vm.provision :shell, inline: "mv marathon.service /usr/lib/systemd/system/", privileged: true
-        host.vm.provision :shell, inline: "systemctl enable marathon.service", privileged: true
-        host.vm.provision :shell, inline: "systemctl start marathon.service", privileged: true
+        host.vm.provision :shell, inline: "systemctl start marathon"
+
+        # etcd
+        host.vm.provision :shell, inline: "sh -c 'echo ETCD_LISTEN_CLIENT_URLS=\"http://0.0.0.0:2379\" >> /etc/etcd/etcd.conf'"
+        host.vm.provision :shell, inline: "sh -c 'echo ETCD_ADVERTISE_CLIENT_URLS=\"http://#{master_ip}:2379\" >> /etc/etcd/etcd.conf'"        
+        host.vm.provision :shell, inline: "systemctl enable etcd.service"
+        host.vm.provision :shell, inline: "systemctl start etcd.service"
       end
 
-      # Configure the Agent nodes of the cluster.
+	  # Agents
       if i > 1
-        ["calico", "mesos-agent"].each do |service_name|
-          host.vm.provision "file", source: "units/#{service_name}.service", destination: "#{service_name}.service"
+        # Provision with docker, and download the calico-node docker image
+        host.vm.provision :docker, images: ["calico/node:#{calico_node_ver}"]
+      
+        # Install epel packages
+        host.vm.provision :shell, inline: "yum install -y epel-release"
+        
+        # Calico-Mesos RPM
+        # Check if user has set CALICO_MESOS_RPM_PATH environment variable 
+        if ENV.key?("CALICO_MESOS_RPM_PATH")
+          # If so, then copy the file from that location onto the agent.
+          # The specified file should be the RPM produced by running `make rpm` 
+          # in this (the calico-mesos-deployments). 
+          host.vm.provision "file", source: ENV['CALICO_MESOS_RPM_PATH'], destination: "calico-mesos.rpm"
+        else
+          # If that variable is not set, download the latest release from github.
+          host.vm.provision :shell, inline: "curl -L -O #{calico_mesos_rpm_url}"
         end
+        host.vm.provision :shell, inline: "yum install -y calico-mesos.rpm"
+      
+        # Configure calico
+        host.vm.provision :shell, inline: "sh -c 'echo MASTER=zk://#{master_ip}:2181/mesos/ > /etc/default/mesos-slave'"
+        host.vm.provision :shell, inline: "sh -c 'echo ETCD_AUTHORITY=#{master_ip}:2379 >> /etc/default/mesos-slave'"
+        host.vm.provision :shell, inline: "systemctl start calico-mesos.service"
 
-        # Set firewall rules
-        host.vm.provision :shell, inline: "systemctl restart firewalld", privileged: true
-        [179, 5051].each do |port|
-          host.vm.provision :shell, inline: "firewall-cmd --zone=public --add-port=#{port}/tcp --permanent", privileged: true
+        # Mesos-Netmodules RPMS
+        # Check if user has set MESOS_NETMODULES_TAR_PATH environment variable 
+        if ENV.key?("MESOS_NETMODULES_TAR_PATH")
+          # If so, then copy the file from that location onto the agent.
+          # The specified file should be a tar containing a folder named
+          # 'mesos-netmodules-rpm'. (This can be produced by running `make rpm`
+          # in the net-modules repo.)
+          host.vm.provision "file", source: ENV['MESOS_NETMODULES_TAR_PATH'], destination: "mesos-netmodules-rpms.tar"
+        else
+          # If that variable is not set, download the latest release from github.
+          host.vm.provision :shell, inline: "curl -L -O #{mesos_netmodules_rpm_url}"
         end
-        host.vm.provision :shell, inline: "systemctl restart firewalld", privileged: true
+        # Untar mesos-netmodules-rpms.tar and install its contianing RPMs
+        host.vm.provision :shell, inline: "tar -xvf mesos-netmodules-rpms.tar"
+        host.vm.provision :shell, inline: "yum install -y mesos-netmodules-rpms/*.rpm"
 
-        # Calicoctl
-        host.vm.provision :shell, inline: "yum install -y wget", privileged: true
-        host.vm.provision :shell, inline: "wget -qO /usr/bin/calicoctl #{calicoctl_url}", privileged: true
-        host.vm.provision :shell, inline: "chmod +x /usr/bin/calicoctl"
-        host.vm.provision :shell, inline: "sh -c 'echo ETCD_AUTHORITY=#{master_ip}:4001 > /etc/sysconfig/calico'", privileged: true
-
-        # Start calico service with systemd and check status
-        host.vm.provision :shell, inline: "mv calico.service /usr/lib/systemd/system/", privileged: true
-        host.vm.provision :shell, inline: "systemctl enable calico.service", privileged: true
-        host.vm.provision :shell, inline: "systemctl start calico.service", privileged: true
-        host.vm.provision :shell, inline: "calicoctl status"
-
-        # Configure mesos-agent
-        host.vm.provision :shell, inline: "sh -c 'echo ZK=#{master_ip} > /etc/sysconfig/mesos-agent'", privileged: true
-        host.vm.provision :shell, inline: "sh -c 'echo IP=#{ip} >> /etc/sysconfig/mesos-agent'", privileged: true
-        host.vm.provision :shell, inline: "mv mesos-agent.service /usr/lib/systemd/system/", privileged: true
-        host.vm.provision :shell, inline: "systemctl enable mesos-agent.service", privileged: true
-        host.vm.provision :shell, inline: "systemctl start mesos-agent.service", privileged: true
+        # Configure and start mesos-slave
+        host.vm.provision :shell, inline: "sh -c 'echo #{ip} > /etc/mesos-slave/ip'"
+        host.vm.provision :shell, inline: "sh -c 'echo #{ip} > /etc/mesos-slave/hostname'"
+        host.vm.provision :shell, inline: "systemctl start mesos-slave.service"
       end
     end
   end
