@@ -27,9 +27,11 @@ The Mesos Agent is configured with several custom RPMs. Mesos is installed with 
  * **OS**: `Centos`
  * **Hostname**: `calico-02`
  * **IP**: `172.18.8.102`
- * **Docker Containers**:
+ * **Running Services**:
    * `mesos-agent`
+ * **Docker Containers**:
    * `calico-node`
+   * `calico-libnetwork`
 
 ## Prerequisites
 This guide requires a hypervisor with the following specs:
@@ -42,7 +44,7 @@ This guide requires a hypervisor with the following specs:
 
 
 ## Getting Started
-1. You must run the vagrant script from its location in the repo as it adds the unit files in its path to each host. First, download it:
+1. First, download the demo:
   ```
   curl -O https://github.com/projectcalico/calico-mesos-deployments/archive/master.tar.gz
   tar -xvf calico-mesos-deployments-master.tar.gz
@@ -69,9 +71,11 @@ Every agent instance will take similar form to the agent instance above:
  * **OS**: `Centos`
  * **Hostname**: `calico-0X`
  * **IP**: `172.18.8.10X`
+ * **Running Services**:
+   * `mesos-agent`
  * **Docker Containers**:
-	 * `mesos-agent` - `calico/mesos-calico`
-	 * `calico-node` - `calico/node`
+   * `calico-node`
+   * `calico-libnetwork`
 
 where `X` is the instance number.
  
