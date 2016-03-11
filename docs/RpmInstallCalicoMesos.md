@@ -14,7 +14,7 @@ At the completion of this guide, you will have a Mesos Agent ready to launch tas
 - `calico_mesos` plugin binary
 - `modules.json`, JSON file which points mesos to the location of `net-modules` and points `net-modules` to the `calico-mesos` plugin
 - `calicoctl`, a command line tool for easily launching the calico-node service
-- `calico.service`, a systemd service to ensure calico is always running
+- `calico-mesos.service`, a systemd service to ensure calico is always running
 
 >Note: These RPMs do not serve as an official calico or mesos installation option, and will not receive a supported upgrade story for the future. They merely serve as a more automatic alternative to performing the steps in the [Manually Installing Calico + Mesos + Netmodules](ManualInstallCalicoMesos.md) guide.
 

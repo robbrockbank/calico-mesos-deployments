@@ -27,7 +27,7 @@ Then attempt to ping that name from other hosts.
 It is also important that Calico and Mesos have the same view of the (non-fully-qualified) hostname.  Ensure that the value returned by `hostname` is unique for each host in your cluster.
 
 ### Docker
-Since this is a dockerized deployment, you will need Docker installed on every Master and Agent in your cluster.
+Calico's core services are run in a docker container, so we'll need Docker installed on every Agent in the cluster.
 [Follow Docker's Centos installation guide](https://docs.docker.com/engine/installation/centos/) for information on how to get Docker installed.
 
 

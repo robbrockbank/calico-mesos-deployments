@@ -14,7 +14,7 @@ Before you start launching tasks with Marathon, we suggest running the Calico-Me
 
 To launch the framework, run the following docker command from any host that can communicate with your master (we recommend simply running it directly on the master itself):
 ```
-docker run --net=host calico/calico-mesos-framework <master-ip>:5050
+docker run --net=host calico/calico-mesos-framework --master=<master-ip>:5050
 ```
 - Some tests require multiple hosts to ensure cross-host communication, and may fail unless you are running 2+ agents.
 - Additionally, if running your cluster in the public cloud, cross-host tests will fail unless you [Enable IP over IP](https://github.com/projectcalico/calico-containers/blob/master/docs/FAQ.md#can-i-run-calico-in-a-public-cloud-environment)
