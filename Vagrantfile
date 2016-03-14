@@ -147,11 +147,6 @@ Vagrant.configure("2") do |config|
       # Selinux => permissive
       host.vm.provision :shell, inline: "setenforce permissive"
 
-      # Generate certs
-      host.vm.provision :shell, inline: "mkdir /keys"
-      host.vm.provision :shell, inline: "openssl genrsa -f4  -out /keys/key.pem 4096"
-      host.vm.provision :shell, inline: "openssl req -new -batch -x509  -days 365 -key /keys/key.pem -out /keys/cert.pem"
-
       # Master
       if i == 1
         # Add official Mesos Repos
