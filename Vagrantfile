@@ -8,14 +8,14 @@ num_instances = 2
 instance_name_prefix="calico-mesos"
 
 # Version of mesos to install from official mesos repo
-mesos_version = "0.27.1"
+mesos_version = "0.27.0"
 
 # Calico version (for calicoctl and calico-node)
 calico_node_ver = "v0.17.0"
 calicoctl_url = "https://github.com/projectcalico/calico-containers/releases/download/#{calico_node_ver}/calicoctl"
 
-mesos_netmodules_rpm_url = "https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.1%2B1/mesos-netmodules-rpms.tar"
-calico_mesos_rpm_url = "https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.1%2B2/calico-mesos.rpm"
+mesos_netmodules_rpm_url = "https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.0%2B2/mesos-netmodules-rpms.tar"
+calico_mesos_rpm_url = "https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.0%2B2/calico-mesos.rpm"
 
 Vagrant.configure("2") do |config|
   config.vm.box = 'centos/7'
