@@ -183,6 +183,7 @@ Vagrant.configure("2") do |config|
         # Configure and start mesos-slave
         host.vm.provision :shell, inline: "sh -c 'echo #{ip} > /etc/mesos-slave/ip'"
         host.vm.provision :shell, inline: "sh -c 'echo #{ip} > /etc/mesos-slave/hostname'"
+        host.vm.provision :shell, inline: "sh -c 'echo mesos,docker > /etc/mesos-slave/containerizers'"
         host.vm.provision :shell, inline: "systemctl start mesos-slave.service"
       end
     end
