@@ -8,7 +8,7 @@ num_instances = 2
 instance_name_prefix="calico-mesos"
 
 # Version of mesos to install from official mesos repo
-mesos_version = "0.27.0"
+mesos_version = "0.28.0"
 
 # Calico version (for calicoctl and calico-node)
 calico_node_ver = "v0.17.0"
@@ -189,6 +189,9 @@ Vagrant.configure("2") do |config|
         host.vm.provision :shell, inline: "sh -c 'echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1'"
         host.vm.provision :shell, inline: "systemctl restart network"
       
+        host.vm.provision :shell, inline: "rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm"
+        host.vm.provision :shell, inline: "yum -y install mesos-#{mesos_version}"
+
         # Install epel packages
         host.vm.provision :shell, inline: "yum install -y epel-release"
 
@@ -215,22 +218,6 @@ Vagrant.configure("2") do |config|
 
         # Run calico libnetwork
         host.vm.provision :shell, inline: $start_calico_libnetwork, args: "#{master_ip}"
-
-        # Mesos-Netmodules RPMS
-        # Check if user has set MESOS_NETMODULES_TAR_PATH environment variable 
-        if ENV.key?("MESOS_NETMODULES_TAR_PATH")
-          # If so, then copy the file from that location onto the agent.
-          # The specified file should be a tar containing a folder named
-          # 'mesos-netmodules-rpm'. (This can be produced by running `make rpm`
-          # in the net-modules repo.)
-          host.vm.provision "file", source: ENV['MESOS_NETMODULES_TAR_PATH'], destination: "mesos-netmodules-rpms.tar"
-        else
-          # If that variable is not set, download the latest release from github.
-          host.vm.provision :shell, inline: "curl -L -O #{mesos_netmodules_rpm_url}"
-        end
-        # Untar mesos-netmodules-rpms.tar and install its contianing RPMs
-        host.vm.provision :shell, inline: "tar -xvf mesos-netmodules-rpms.tar"
-        host.vm.provision :shell, inline: "yum install -y mesos-netmodules-rpms/*.rpm"
 
         # Configure and start mesos-slave
         host.vm.provision :shell, inline: "sh -c 'echo #{ip} > /etc/mesos-slave/ip'"
