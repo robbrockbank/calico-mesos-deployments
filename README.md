@@ -12,7 +12,7 @@ This repo provides RPMs for installing Calico Networking for your Mesos Cluster,
 We recommend browsing the docs for the [latest release](https://github.com/projectcalico/calico-mesos-deployments/releases/latest).
 
 - For information on Calico, see [projectcalico.org](http://projectcalico.org)
-- For more information on Calico's Mesos integraiton, see [github.com/projectcalico/calico-mesos][calico-mesos]
+- For more information on Calico's Mesos integration, see [github.com/projectcalico/calico-mesos][calico-mesos]
 - Still have questions? Contact us on the #Mesos channel of [Calico's Slack][calico-slack].
 
 ## Demo

@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 # Size of the cluster created by Vagrant
-num_instances = 2
+num_instances = 3
 
 # VM Basename
 instance_name_prefix="calico-mesos"
@@ -55,6 +55,48 @@ EOF
 systemctl start calico-libnetwork.service
 SCRIPT
 
+$install_mesos_dns=<<SCRIPT
+curl -LO https://github.com/mesosphere/mesos-dns/releases/download/v0.5.0/mesos-dns-v0.5.0-linux-amd64
+mv mesos-dns-v0.5.0-linux-amd64 /usr/bin/mesos-dns
+chmod +x /usr/bin/mesos-dns
+mkdir /etc/mesos-dns
+cat <<EOF > /etc/mesos-dns/mesos-dns.json
+{
+  "zk": "",
+  "masters": ["${1}:5050"],
+  "refreshSeconds": 5,
+  "ttl": 60,
+  "domain": "mesos",
+  "port": 53,
+  "resolvers": ["8.8.8.8"],
+  "timeout": 5,
+  "httpon": true,
+  "dsnon": true,
+  "httpport": 8123,
+  "externalon": true,
+  "listener": "0.0.0.0",
+  "SOAMname": "root.ns1.mesos",
+  "SOARname": "ns1.mesos",
+  "SOARefresh": 60,
+  "SOARetry":   600,
+  "SOAExpire":  86400,
+  "SOAMinttl": 60,
+  "IPSources": ["netinfo", "mesos", "host"]
+}
+EOF
+
+cat <<EOF > /usr/lib/systemd/system/mesos-dns.service
+[Unit]
+Description=mesos-dns
+
+[Service]
+ExecStart=/usr/bin/mesos-dns -config=/etc/mesos-dns/mesos-dns.json
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl start mesos-dns
+SCRIPT
 
 Vagrant.configure("2") do |config|
   config.vm.box = 'centos/7'
@@ -130,6 +172,9 @@ Vagrant.configure("2") do |config|
         host.vm.provision :shell, inline: "sh -c 'echo ETCD_ADVERTISE_CLIENT_URLS=\"http://#{master_ip}:2379\" >> /etc/etcd/etcd.conf'"        
         host.vm.provision :shell, inline: "systemctl enable etcd.service"
         host.vm.provision :shell, inline: "systemctl start etcd.service"
+
+        # Mesos-dns
+        host.vm.provision :shell, inline: $install_mesos_dns, args: "#{master_ip}"
       end
 
 	  # Agents
@@ -137,6 +182,11 @@ Vagrant.configure("2") do |config|
         # Provision with docker, and download the calico-node docker image
         host.vm.provision :docker, images: ["calico/node:#{calico_node_ver}"]
       
+        # Configure slave to use mesos dns
+        host.vm.provision :shell, inline: "sh -c 'echo DNS1=#{master_ip} >> /etc/sysconfig/network-scripts/ifcfg-eth1'"
+        host.vm.provision :shell, inline: "sh -c 'echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1'"
+        host.vm.provision :shell, inline: "systemctl restart network"
+
         # Install epel packages
         host.vm.provision :shell, inline: "yum install -y epel-release"
 
@@ -176,7 +226,7 @@ Vagrant.configure("2") do |config|
           # If that variable is not set, download the latest release from github.
           host.vm.provision :shell, inline: "curl -L -O #{mesos_netmodules_rpm_url}"
         end
-        # Untar mesos-netmodules-rpms.tar and install its contianing RPMs
+        # Untar mesos-netmodules-rpms.tar and install its containing RPMs
         host.vm.provision :shell, inline: "tar -xvf mesos-netmodules-rpms.tar"
         host.vm.provision :shell, inline: "yum install -y mesos-netmodules-rpms/*.rpm"
 
