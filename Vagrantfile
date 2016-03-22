@@ -151,7 +151,7 @@ Vagrant.configure("2") do |config|
       if i == 1
         # Add official Mesos Repos
         host.vm.provision :shell, inline: "rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm"
-        host.vm.provision :shell, inline: "yum -y install mesos-#{mesos_version} marathon mesosphere-zookeeper etcd"
+        host.vm.provision :shell, inline: "yum -y install mesos-#{mesos_version} marathon-0.14.2 mesosphere-zookeeper etcd"
         
         # Zookeeper
         host.vm.provision :shell, inline: "systemctl start zookeeper"
