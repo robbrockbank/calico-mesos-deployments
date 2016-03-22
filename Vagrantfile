@@ -62,7 +62,7 @@ chmod +x /usr/bin/mesos-dns
 mkdir /etc/mesos-dns
 cat <<EOF > /etc/mesos-dns/mesos-dns.json
 {
-  "zk": "",
+  "zk": "zk://${1}:2181/mesos/",
   "masters": ["${1}:5050"],
   "refreshSeconds": 5,
   "ttl": 60,
@@ -81,7 +81,7 @@ cat <<EOF > /etc/mesos-dns/mesos-dns.json
   "SOARetry":   600,
   "SOAExpire":  86400,
   "SOAMinttl": 60,
-  "IPSources": ["netinfo", "mesos", "host"]
+  "IPSources": ["docker", "netinfo", "mesos", "host"]
 }
 EOF
 
