@@ -175,9 +175,9 @@ Vagrant.configure("2") do |config|
         end
 
         # Configure slave to use mesos dns
-        host.vm.provision :shell, inline: "sh -c 'echo DNS1=#{master_ip} >> /etc/sysconfig/network-scripts/ifcfg-eth1'"
-        host.vm.provision :shell, inline: "sh -c 'echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1'"
-        host.vm.provision :shell, inline: "systemctl restart network"
+        #host.vm.provision :shell, inline: "sh -c 'echo DNS1=#{master_ip} >> /etc/sysconfig/network-scripts/ifcfg-eth1'"
+        #host.vm.provision :shell, inline: "sh -c 'echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1'"
+        #host.vm.provision :shell, inline: "systemctl restart network"
 
         # Configure and start mesos-slave
         host.vm.provision :shell, inline: "sh -c 'echo zk://#{master_ip}:2181/mesos > /etc/mesos/zk'"
