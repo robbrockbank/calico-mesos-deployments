@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 # Size of the cluster created by Vagrant
-num_instances = 2
+num_instances = 3
 
 # VM Basename
 instance_name_prefix="calico-mesos"
@@ -10,12 +10,17 @@ instance_name_prefix="calico-mesos"
 # Version of mesos to install from official mesos repo
 mesos_version = "0.28.0"
 
-# Calico version (for calicoctl and calico-node)
-calico_node_ver = "v0.17.0"
-calicoctl_url = "https://github.com/projectcalico/calico-containers/releases/download/#{calico_node_ver}/calicoctl"
+# The calicoctl download URL.
+calicoctl_url = "http://www.projectcalico.org/builds/calicoctl"
 
-mesos_netmodules_rpm_url = "https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.0%2B2/mesos-netmodules-rpms.tar"
-calico_mesos_rpm_url = "https://github.com/projectcalico/calico-mesos-deployments/releases/download/0.27.0%2B2/calico-mesos.rpm"
+# The version of the calico docker images to install.  This is used to pre-load
+# the calico/node and calico/node-libnetwork images which slows down the
+# install process, but speeds up the tutorial.
+#
+# This version should match the version required by calicoctl installed from
+# calicoctl_url.
+calico_node_ver = "latest"
+calico_libnetwork_ver = "latest"
 
 # Define the install script which restarts docker with flags to use a cluster-store
 $configure_docker=<<SCRIPT
@@ -31,20 +36,55 @@ SCRIPT
 
 # Define the install script which installs a systemd service file which
 # launches calico-libnetwork
-$start_calico_libnetwork=<<SCRIPT
+$start_calico=<<SCRIPT
+
+# Create the /etc/calico directory where we write out some config.
+mkdir /etc/calico
+
+# Write out the environment variable file
+cat <<EOF > /etc/calico/calico.env
+ETCD_AUTHORITY=${1}:2379
+ETCD_SCHEME=http
+ETCD_CA_FILE=""
+ETCD_CERT_FILE=""
+ETCD_KEY_FILE=""
+EOF
+
+# Write out the Calico systemd file.
+cat <<EOF > /usr/lib/systemd/system/calico.service
+﻿[Unit]
+Description=calico-node
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/calico/calico.env
+ExecStartPre=-/usr/bin/docker rm -f calico-node
+ExecStart=/usr/bin/calicoctl node --detach=false
+ExecStop=-/usr/bin/docker stop calico-node
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Write out the Calico-libnetwork systemd file.
 cat <<EOF > /usr/lib/systemd/system/calico-libnetwork.service
-[Unit]
+﻿[Unit]
 Description=calico-libnetwork
 After=docker.service
 Requires=docker.service
 
 [Service]
+EnvironmentFile=/etc/calico/calico.env
 ExecStartPre=-/usr/bin/docker rm -f calico-libnetwork
-ExecStart=/usr/bin/docker run --privileged --net=host \\
- -v /run/docker/plugins:/run/docker/plugins \\
- --name=calico-libnetwork \\
- -e ETCD_AUTHORITY=${1}:2379 \\
- -e ETCD_SCHEME=http \\
+ExecStart=/usr/bin/docker run --privileged --net=host \
+ -v /run/docker/plugins:/run/docker/plugins \
+ --name=calico-libnetwork \
+ -e ETCD_AUTHORITY=${ETCD_AUTHORITY} \
+ -e ETCD_SCHEME=${ETCD_SCHEME} \
+ -e ETCD_CA_CERT_FILE=${ETCD_CA_CERT_FILE} \
+ -e ETCD_CERT_FILE=${ETCD_CERT_FILE} \
+ -e ETCD_KEY_FILE=${ETCD_KEY_FILE} \
  calico/node-libnetwork:latest
 ExecStop=-/usr/bin/docker stop calico-libnetwork
 
@@ -52,9 +92,10 @@ ExecStop=-/usr/bin/docker stop calico-libnetwork
 WantedBy=multi-user.target
 EOF
 
+# Start both Calico services
+systemctl start calico.service
 systemctl start calico-libnetwork.service
 SCRIPT
-
 
 $install_mesos_dns=<<SCRIPT
 curl -LO https://github.com/mesosphere/mesos-dns/releases/download/v0.5.0/mesos-dns-v0.5.0-linux-amd64
@@ -63,7 +104,7 @@ chmod +x /usr/bin/mesos-dns
 mkdir /etc/mesos-dns
 cat <<EOF > /etc/mesos-dns/mesos-dns.json
 {
-  "zk": "",
+  "zk": "zk://${1}:2181/mesos/",
   "masters": ["${1}:5050"],
   "refreshSeconds": 5,
   "ttl": 60,
@@ -147,11 +188,13 @@ Vagrant.configure("2") do |config|
       # Selinux => permissive
       host.vm.provision :shell, inline: "setenforce permissive"
 
+      # Add official Mesos Repos and install Mesos.
+      host.vm.provision :shell, inline: "sudo rpm -Uvh http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm"
+      host.vm.provision :shell, inline: "yum -y install mesos-#{mesos_version}"
+
       # Master
       if i == 1
-        # Add official Mesos Repos
-        host.vm.provision :shell, inline: "rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm"
-        host.vm.provision :shell, inline: "yum -y install mesos-#{mesos_version} marathon-0.14.2 mesosphere-zookeeper etcd"
+        host.vm.provision :shell, inline: "yum -y install marathon-0.14.2 mesosphere-zookeeper etcd"
         
         # Zookeeper
         host.vm.provision :shell, inline: "systemctl start zookeeper"
@@ -177,42 +220,25 @@ Vagrant.configure("2") do |config|
 	  # Agents
       if i > 1
         # Provision with docker, and download the calico-node docker image
-        host.vm.provision :docker, images: ["calico/node:#{calico_node_ver}"]
+          host.vm.provision :docker, images: [
+          "calico/node-libnetwork:#{calico_libnetwork_ver}",
+          "calico/node:#{calico_node_ver}"
+        ]
+
+        # Configure docker to use etcd on master as its datastore
+        host.vm.provision :shell, inline: $configure_docker, args: "#{master_ip}"
+
+        # Install calicoctl
+        host.vm.provision :shell, inline: "curl -o /usr/bin/calicoctl #{calicoctl_url}", :privileged => true
+        host.vm.provision :shell, inline: "chmod +x /usr/bin/calicoctl"
+
+        # Run calico components
+        host.vm.provision :shell, inline: $start_calico, args: "#{master_ip}"
 
         # Configure slave to use mesos dns
         host.vm.provision :shell, inline: "sh -c 'echo DNS1=#{master_ip} >> /etc/sysconfig/network-scripts/ifcfg-eth1'"
         host.vm.provision :shell, inline: "sh -c 'echo PEERDNS=yes >> /etc/sysconfig/network-scripts/ifcfg-eth1'"
         host.vm.provision :shell, inline: "systemctl restart network"
-      
-        host.vm.provision :shell, inline: "rpm -Uvh http://repos.mesosphere.com/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm"
-        host.vm.provision :shell, inline: "yum -y install mesos-#{mesos_version}"
-
-        # Install epel packages
-        host.vm.provision :shell, inline: "yum install -y epel-release"
-
-        # Configure docker to use etcd on master as its datastore
-        host.vm.provision :shell, inline: $configure_docker, args: "#{master_ip}"
-        
-        # Calico-Mesos RPM
-        # Check if user has set CALICO_MESOS_RPM_PATH environment variable 
-        if ENV.key?("CALICO_MESOS_RPM_PATH")
-          # If so, then copy the file from that location onto the agent.
-          # The specified file should be the RPM produced by running `make rpm` 
-          # in this repo (calico-mesos-deployments). 
-          host.vm.provision "file", source: ENV['CALICO_MESOS_RPM_PATH'], destination: "calico-mesos.rpm"
-        else
-          # If that variable is not set, download the latest release from github.
-          host.vm.provision :shell, inline: "curl -L -O #{calico_mesos_rpm_url}"
-        end
-        host.vm.provision :shell, inline: "yum install -y calico-mesos.rpm"
-      
-        # Configure calico
-        host.vm.provision :shell, inline: "sh -c 'echo MASTER=zk://#{master_ip}:2181/mesos/ > /etc/default/mesos-slave'"
-        host.vm.provision :shell, inline: "sh -c 'echo ETCD_AUTHORITY=#{master_ip}:2379 >> /etc/default/mesos-slave'"
-        host.vm.provision :shell, inline: "systemctl start calico-mesos.service"
-
-        # Run calico libnetwork
-        host.vm.provision :shell, inline: $start_calico_libnetwork, args: "#{master_ip}"
 
         # Configure and start mesos-slave
         host.vm.provision :shell, inline: "sh -c 'echo #{ip} > /etc/mesos-slave/ip'"
